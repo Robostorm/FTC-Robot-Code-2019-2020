@@ -13,6 +13,10 @@ public class RRBotHardware
     public DcMotor frontRightMotor = null;
     public DcMotor frontLeftMotor = null;
 
+    public Servo trayPullerLeft = null;
+    public Servo trayPullerRight = null;
+    public Servo pinPuller = null;
+
     /* local OpMode members. */
     HardwareMap hwMap =  null;
     private ElapsedTime period = new ElapsedTime();
@@ -32,6 +36,15 @@ public class RRBotHardware
         rearLeftMotor = hwMap.dcMotor.get("rear_left");
         frontRightMotor = hwMap.dcMotor.get("front_right");
         frontLeftMotor = hwMap.dcMotor.get("front_left");
+
+        // Define and Initialize Servos
+        trayPullerLeft = hwMap.servo.get("tray_puller_left");
+        trayPullerRight = hwMap.servo.get("tray_puller_right");
+        //pinPuller = hwMap.servo.get("pin_puller");
+
+        // Set Position of Servos
+        trayPullerLeft.setPosition(1);
+        trayPullerRight.setPosition(0);
 
         //set motors to drive forwards
         rearRightMotor.setDirection(DcMotor.Direction.REVERSE);

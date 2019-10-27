@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,8 +14,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.util.Locale;
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-@Disabled
+@Autonomous(name="RRBotAuto")
+
 public class RRBotAuto extends LinearOpMode {
 
     // Declare OpMode members.
@@ -26,9 +27,9 @@ public class RRBotAuto extends LinearOpMode {
     private Orientation angles;
 
     //Motor Definitions
-    private final double COUNTS_PER_MOTOR_REV = 537.6 ;    // Andymark 20:1 gearmotor
-    private final double DRIVE_GEAR_REDUCTION = 1.0 ;     // This is < 1.0 if geared UP
-    private final double WHEEL_DIAMETER_INCHES = 4.0 ;     // For figuring circumference
+    private final double COUNTS_PER_MOTOR_REV = 537.6;    // Andymark 20:1 gearmotor
+    private final double DRIVE_GEAR_REDUCTION = 1.0;     // This is < 1.0 if geared UP
+    private final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
     private final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
 
 
@@ -40,7 +41,16 @@ public class RRBotAuto extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
+        robot.init(hardwareMap);
+        initGyro();
 
+        // Send telemetry message to indicate successful Encoder reset
+        telemetry.addData("Path0",  "Starting at %7d :%7d",
+                robot.rearRightMotor.getCurrentPosition(),
+                robot.rearLeftMotor.getCurrentPosition(),
+                robot.frontRightMotor.getCurrentPosition(),
+                robot.frontLeftMotor.getCurrentPosition());
+        telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -49,12 +59,39 @@ public class RRBotAuto extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-
-
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            /*telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.update();
+
+            EncoderDriveTank(0.5,12,10,5);
+            sleep(1000);
+            EncoderDriveTank(0.5,-12,-10,5);
+            sleep(1000);
+            TurnByGyro("left",90,0.5);
+            sleep(1000);
+            TurnByGyro("right",90,0.5);
+            sleep(1000);
+
+            robot.trayPullerLeft.setPosition(0);
+            robot.trayPullerRight.setPosition(1);
+            sleep(1000);
+            robot.trayPullerLeft.setPosition(1);
+            robot.trayPullerRight.setPosition(0);
+            sleep(1000);*/
+            telemetry.addData("Gyro Pos:", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
             telemetry.update();
         }
+    }
+
+    public void initGyro()
+    {
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
     }
 
     public void EncoderDriveTank(double speed, double leftInches, double rightInches, double timeoutS)
