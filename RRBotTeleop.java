@@ -57,7 +57,7 @@ public class RRBotTeleop extends OpMode
         if(!drive.getIsAutoMove())
         {
             //drive.setMotorPower(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, -gamepad1.right_stick_y, true);
-            drive.setMotorPower(gamepad1.left_stick_x/2*gamepad1.right_trigger+0.25, -gamepad1.left_stick_y/2*gamepad1.right_trigger+0.25, -gamepad1.right_stick_x/2*gamepad1.right_trigger+0.25, -gamepad1.right_stick_y/2*gamepad1.right_trigger+0.25, true);
+            drive.setMotorPower((gamepad1.left_stick_x/2)*(gamepad1.right_trigger+0.25), -(gamepad1.left_stick_y/2)*(gamepad1.right_trigger+0.25), -(gamepad1.right_stick_x/2)*(gamepad1.right_trigger+0.25), -(gamepad1.right_stick_y/2)*(gamepad1.right_trigger+0.25), true);
         }
         else
         {
