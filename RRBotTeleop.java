@@ -26,8 +26,6 @@ public class RRBotTeleop extends OpMode
     //construct drive class
     RRBotMecanumDrive drive = new RRBotMecanumDrive(robot);
 
-    boolean intakeOn;
-
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -46,8 +44,7 @@ public class RRBotTeleop extends OpMode
      */
     @Override
     public void loop() {
-        driveUpdate();
-        intake();
+        DriveUpdate();
     }
 
     /*
@@ -62,7 +59,8 @@ public class RRBotTeleop extends OpMode
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    public void driveUpdate() {
+    public void DriveUpdate()
+    {
         //if the robot is not driving automatically, set motor power to the manual drive algorithm based on gamepad inputs
         if(!drive.getIsAutoMove())
         {
@@ -75,18 +73,6 @@ public class RRBotTeleop extends OpMode
         else
         {
             drive.AutoMoveEndCheck();
-        }
-    }
-
-    public void intake() {
-        if(gamepad1.a && !intakeOn) {
-            robot.intake1.setPower(1);
-            robot.intake2.setPower(1);
-            intakeOn = true;
-        } else if(gamepad1.a && intakeOn){
-            robot.intake1.setPower(-1);
-            robot.intake2.setPower(-1);
-            intakeOn = false;
         }
     }
 }
