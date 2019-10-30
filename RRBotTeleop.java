@@ -69,6 +69,16 @@ public class RRBotTeleop extends OpMode
             mult = map(mult, 0,1,minspeed,maxspeed);
             //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
             drive.setMotorPower((gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, (gamepad1.left_stick_y)*mult, false);
+
+            //FIGURE THIS OUT vv
+            boolean apressed = gamepad1.a;
+            if(apressed && !robot.intakeMotorLeft.isBusy() && !robot.intakeMotorRight.isBusy()){
+                robot.intakeMotorLeft.setPower(1);
+                robot.intakeMotorRight.setPower(1);
+            }else if(apressed && robot.intakeMotorLeft.isBusy() && robot.intakeMotorRight.isBusy()){
+
+            }
+            //FIGURE THIS OUT ^^
         }
         else
         {

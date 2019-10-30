@@ -17,6 +17,9 @@ public class RRBotHardware
     public Servo trayPullerRight = null;
     public Servo pinPuller = null;
 
+    public DcMotor intakeMotorLeft = null;
+    public DcMotor intakeMotorRight = null;
+
     /* local OpMode members. */
     HardwareMap hwMap =  null;
     private ElapsedTime period = new ElapsedTime();
@@ -41,6 +44,9 @@ public class RRBotHardware
         trayPullerLeft = hwMap.servo.get("tray_puller_left");
         trayPullerRight = hwMap.servo.get("tray_puller_right");
         //pinPuller = hwMap.servo.get("pin_puller");
+
+        intakeMotorLeft = hwMap.dcMotor.get("intake1");
+        intakeMotorRight = hwMap.dcMotor.get("intake2");
 
         // Set Position of Servos
         trayPullerLeft.setPosition(1);
