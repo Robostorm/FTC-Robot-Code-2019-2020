@@ -80,7 +80,7 @@ public class RRBotAuto extends LinearOpMode {
             sleep(1000);*/
 
             //EncoderDriveTank(0.5, 100,100,10);
-            DriveDirection(0.5, 45, 15, 5);
+            DriveDirection(0.5, 45, 15, 2);
             sleep(1000);
 
             //telemetry.addData("Gyro Pos:", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
@@ -98,6 +98,57 @@ public class RRBotAuto extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
     }
+
+    public double[] calcVelocities(double leftX, double leftY)
+    {
+        double moveY1 = leftY;
+        double turn = leftX;
+
+        //remap input values using a function
+        /*if(doFunction)
+        {
+            moveX = inputFunction(moveX);
+            moveY1 = inputFunction(moveY1);
+            turn = inputFunction(turn);
+            moveY2 = inputFunction(moveY2);
+        }*/
+
+        double v1 = moveY1 + turn;
+        double v2 = moveY1 - turn;
+        double v3 = moveY1 - turn;
+        double v4 = moveY1 + turn;
+
+        double max = Math.abs(v1);
+        if(Math.abs(v2) > max)
+            max = Math.abs(v2);
+        if(Math.abs(v3) > max)
+            max = Math.abs(v3);
+        if(Math.abs(v4) > max)
+            max = Math.abs(v4);
+        if(max > 1)
+        {
+            v1 /= max;
+            v2 /= max;
+            v3 /= max;
+            v4 /= max;
+        }
+
+        double[] velocities = {v1, v2, v3, v4};
+        return velocities;
+    }
+
+    public void setMotorPower(double x, double y)
+    {
+        //calculate the velocities
+        double[] velocities = calcVelocities(x, y);
+
+        //set the motor power
+        robot.frontLeftMotor.setPower(velocities[0]);
+        robot.frontRightMotor.setPower(velocities[1]);
+        robot.rearLeftMotor.setPower(velocities[2]);
+        robot.rearRightMotor.setPower(velocities[3]);
+    }
+
     //make another version of the method where you give it inches sideways and inches forward and it goes in a straight line there
     public void DriveDirection(double speed, double angle, double inches, double timeoutS){ //0 Degrees is strafing directly to the right
         robot.rearLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -111,51 +162,40 @@ public class RRBotAuto extends LinearOpMode {
         robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //double curangle = (double)imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle + 90;
-
         //sin(x−(1/4)π) - front right & back left (power, -1 to 1 where negative is back and positive is forward)
         //sin(x+(1/4)π) - front left & back right
-        double inchesfwd = inches*Math.sin(angle);
+        //double inchesfwd = inches*Math.sin(angle);
 
-        int rearLeftTarget = robot.rearLeftMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-        int rearRightTarget = robot.rearRightMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-        int frontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-        int frontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
+        //int rearLeftTarget = robot.rearLeftMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
+        //int rearRightTarget = robot.rearRightMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
+        //int frontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
+        //int frontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
 
-        double rearLeftPower = (Math.sin(angle-(45)))*speed;
-        double rearRightPower = (Math.sin(angle+(45)))*speed;
-        double frontLeftPower = (Math.sin(angle+(45)))*speed;
-        double frontRightPower = (Math.sin(angle-(45)))*speed;
+        double jx = Math.cos(angle);
+        double jy = Math.sin(angle);
 
         if (opModeIsActive())
         {
-            rearLeftTarget *= Math.abs(rearLeftPower);
+            /*rearLeftTarget *= Math.abs(rearLeftPower);
             rearRightTarget *= Math.abs(rearRightPower);
             frontLeftTarget *= Math.abs(frontLeftPower);
-            frontRightTarget *= Math.abs(frontRightPower);
+            frontRightTarget *= Math.abs(frontRightPower);*/
 
             // reset the timeout time and start motion.
-            robot.rearLeftMotor.setTargetPosition(rearLeftTarget);
-            robot.rearRightMotor.setTargetPosition(rearRightTarget);
-            robot.frontLeftMotor.setTargetPosition(frontLeftTarget);
-            robot.frontRightMotor.setTargetPosition(frontRightTarget);
 
             // Turn On RUN_TO_POSITION
-            robot.rearLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            /*robot.rearLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.rearRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
 
             runtime.reset();
-            robot.rearLeftMotor.setPower(rearLeftPower);
-            robot.rearRightMotor.setPower(rearRightPower);
-            robot.frontLeftMotor.setPower(frontLeftPower);
-            robot.frontRightMotor.setPower(frontRightPower);
+            //public void setMotorPower(double x, double y)
+            setMotorPower(jx*speed,jy*speed);
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             while(opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
+                    (runtime.seconds() < timeoutS))
             {
                 // Display it for the driver.
                 //telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
