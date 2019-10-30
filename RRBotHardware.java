@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -12,6 +13,8 @@ public class RRBotHardware
     public DcMotor rearLeftMotor = null;
     public DcMotor frontRightMotor = null;
     public DcMotor frontLeftMotor = null;
+    public DcMotor intake1;
+    public DcMotor intake2;
 
     public Servo trayPullerLeft = null;
     public Servo trayPullerRight = null;
@@ -36,6 +39,9 @@ public class RRBotHardware
         rearLeftMotor = hwMap.dcMotor.get("rear_left");
         frontRightMotor = hwMap.dcMotor.get("front_right");
         frontLeftMotor = hwMap.dcMotor.get("front_left");
+        intake1 = hwMap.dcMotor.get("intake1");
+        intake2 = hwMap.dcMotor.get("intake2");
+
 
         // Define and Initialize Servos
         trayPullerLeft = hwMap.servo.get("tray_puller_left");
@@ -51,18 +57,24 @@ public class RRBotHardware
         rearLeftMotor.setDirection(DcMotor.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        intake1.setDirection(DcMotor.Direction.FORWARD);
+        intake2.setDirection(DcMotor.Direction.REVERSE);
 
         // Set all motors to zero power
         rearRightMotor.setPower(0);
         rearLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         frontLeftMotor.setPower(0);
+        intake1.setPower(0);
+        intake2.setPower(0);
 
         // Set drive motors to run using encoders
         rearRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rearLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intake1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        intake2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Sets motors to brake mode
         rearRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
