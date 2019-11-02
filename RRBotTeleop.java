@@ -16,8 +16,12 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="RRBotTeleop")
 public class RRBotTeleop extends OpMode
 {
-    private static float minspeed = 0.75f; // with gas pedal not pressed
-    private static float maxspeed = 1.5f; // with gas pedal at full
+    public static float minspeed = 0.75f; // with gas pedal not pressed
+    public static float maxspeed = 1.5f; // with gas pedal at full
+
+    private static boolean timerstart=false;
+    private static long curtime;
+    private static boolean switching=false;
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -54,7 +58,7 @@ public class RRBotTeleop extends OpMode
     public void stop() {
     }
 
-    float map(float x, float in_min, float in_max, float out_min, float out_max)
+    public static float map(float x, float in_min, float in_max, float out_min, float out_max)
     {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
@@ -68,17 +72,40 @@ public class RRBotTeleop extends OpMode
             float mult = gamepad1.right_trigger;
             mult = map(mult, 0,1,minspeed,maxspeed);
             //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
-            drive.setMotorPower((gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, (gamepad1.left_stick_y)*mult, false);
+            drive.setMotorPower((gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, (gamepad1.left_stick_y)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
 
             //FIGURE THIS OUT vv
             boolean apressed = gamepad1.a;
-            if(apressed && !robot.intakeMotorLeft.isBusy() && !robot.intakeMotorRight.isBusy()){
-                robot.intakeMotorLeft.setPower(1);
-                robot.intakeMotorRight.setPower(1);
-            }else if(apressed && robot.intakeMotorLeft.isBusy() && robot.intakeMotorRight.isBusy()){
-
+            if(switching){
+                if(System.currentTimeMillis()-curtime > 500){//time before applying reverse voltage to switch direction
+                    robot.intakeMotorLeft.setPower(-1);//should be mleming out
+                    robot.intakeMotorRight.setPower(-1);
+                    switching=false;
+                }
+            }else {
+                if (apressed && !timerstart) {
+                    timerstart = true;
+                    curtime = System.currentTimeMillis();
+                } else if (timerstart) {
+                    if (apressed) {
+                        if (System.nanoTime() - curtime > 500) {//delay before holding A turns into spew mode
+                            robot.intakeMotorLeft.setPower(0);
+                            robot.intakeMotorRight.setPower(0);
+                            switching = true;
+                            curtime=System.currentTimeMillis();
+                        }
+                    } else {
+                        if (robot.intakeMotorLeft.getPower() == 1 && robot.intakeMotorLeft.getPower() == -1) {
+                            robot.intakeMotorLeft.setPower(0);
+                            robot.intakeMotorRight.setPower(0);
+                        } else if (robot.intakeMotorLeft.getPower() == 0) {
+                            robot.intakeMotorLeft.setPower(1);//should be slurping in
+                            robot.intakeMotorRight.setPower(1);
+                        }
+                        timerstart = false;
+                    }
+                }
             }
-            //FIGURE THIS OUT ^^
         }
         else
         {
