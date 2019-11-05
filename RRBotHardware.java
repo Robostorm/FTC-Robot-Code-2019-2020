@@ -19,6 +19,7 @@ public class RRBotHardware
 
     public DcMotor intakeMotorLeft = null;
     public DcMotor intakeMotorRight = null;
+    public DcMotor intakeArm = null;
 
     /* local OpMode members. */
     HardwareMap hwMap =  null;
@@ -47,6 +48,7 @@ public class RRBotHardware
 
         intakeMotorLeft = hwMap.dcMotor.get("intake1");
         intakeMotorRight = hwMap.dcMotor.get("intake2");
+        intakeArm = hwMap.dcMotor.get("intakeArm");
 
         // Set Position of Servos
         trayPullerLeft.setPosition(1);

@@ -70,11 +70,15 @@ public class RRBotTeleop extends OpMode
         {
             //drive.setMotorPower(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, -gamepad1.right_stick_y, true);
             float mult = gamepad1.right_trigger;
+            boolean fulldrive = !gamepad1.x;
             mult = map(mult, 0,1,minspeed,maxspeed);
-            //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
-            drive.setMotorPower((gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, (gamepad1.left_stick_y)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
-
-            //FIGURE THIS OUT vv
+            if(fulldrive){
+                //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
+                drive.setMotorPower(-(gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, (gamepad1.left_stick_y)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
+            }else{
+                drive.setMotorPower(-(gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, 0, 0, false);
+                robot.intakeArm.setPower(gamepad1.left_stick_y*0.1);
+            }
             boolean apressed = gamepad1.a;
             if(switching){
                 if(System.currentTimeMillis()-curtime > 500){//time before applying reverse voltage to switch direction

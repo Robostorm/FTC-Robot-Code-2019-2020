@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.content.Context;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -14,6 +16,8 @@ import java.io.IOException;
 @TeleOp(name="RRBotRecorder")
 public class RRBotRecorder extends OpMode{
     // Declare OpMode members.
+    public static final String RECORD_FILE = "teleop_rec.txt";
+
     private ElapsedTime runtime = new ElapsedTime();
     private static boolean startedRecording=false;
     private static long curtime=-1;
@@ -36,11 +40,13 @@ public class RRBotRecorder extends OpMode{
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
 
-        try{
-            writer = new BufferedWriter(new FileWriter("res/teleop_rec",false));//filename may be wrong
+        /*try{
+
+            telemetry.addData(">>","Writer initialized.");
         }catch(IOException e){
-            e.printStackTrace();
-        }
+            telemetry.addData(">>",e.getMessage());
+            //telemetry.addData(">>", );
+        }*/
     }
 
     @Override
@@ -63,7 +69,7 @@ public class RRBotRecorder extends OpMode{
             //if(curtime!=-1 && System.currentTimeMillis()-curtime >=15){}
             float leftx = gamepad1.left_stick_x;
             float lefty = gamepad1.left_stick_y;
-            float rightx = gamepad1.right_stick_x;
+            float rightx = -gamepad1.right_stick_x;
             float righty = gamepad1.right_stick_y;
             boolean a = gamepad1.a;
             float gas = gamepad1.right_trigger;

@@ -55,7 +55,7 @@ public class RRBotAutoReader extends LinearOpMode{
         robot.init(hardwareMap);
 
         try{
-            br = new BufferedReader(new FileReader(new File("res/teleop_rec")));//MIGHT NEED TO FIX THIS FILENAME
+            br = new BufferedReader(new FileReader(new File(RRBotRecorder.RECORD_FILE)));//MIGHT NEED TO FIX THIS FILENAME
         }catch(FileNotFoundException e) {e.printStackTrace();}
 
         // Send telemetry message to indicate successful Encoder reset
