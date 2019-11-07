@@ -20,6 +20,7 @@ public class RRBotTeleop extends OpMode
     public static float maxspeed = 1.5f; // with gas pedal at full
 
     private static boolean timerstart=false;
+    private static long ytimeout = 0;
     private static long curtime;
     private static boolean switching=false;
     private static boolean fromheld=false;
@@ -79,6 +80,7 @@ public class RRBotTeleop extends OpMode
             boolean fulldrive = !gamepad1.x;
             boolean apressed = gamepad1.a;
             boolean leftBump = gamepad1.left_bumper;
+            boolean ypressed = gamepad1.y;
             float intakeMult=1;
             if(leftBump) intakeMult = 0.5f;
             float rx = gamepad1.right_stick_x;
@@ -88,6 +90,11 @@ public class RRBotTeleop extends OpMode
             mult = map(mult, 0,1,minspeed,maxspeed);
             //down is 860
             //folded is 0
+            if(ypressed && System.currentTimeMillis()-ytimeout > 250){
+                robot.trayPullerLeft.setPosition(1-robot.trayPullerLeft.getPosition());
+                robot.trayPullerRight.setPosition(1-robot.trayPullerRight.getPosition());
+                ytimeout = System.currentTimeMillis();
+            }
             if(fulldrive){
                 robot.intakeArm.setPower(0);
                 //robot.intakeArm.setTargetPosition(intakeArmLastPos);
