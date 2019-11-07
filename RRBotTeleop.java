@@ -22,6 +22,8 @@ public class RRBotTeleop extends OpMode
     private static boolean timerstart=false;
     private static long curtime;
     private static boolean switching=false;
+    private static boolean fromheld=false;
+    private static int intakeArmLastPos;
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -38,6 +40,10 @@ public class RRBotTeleop extends OpMode
         telemetry.addData("Status", "Initializing");
 
         robot.init(hardwareMap);
+
+        robot.intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.intakeArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -71,43 +77,72 @@ public class RRBotTeleop extends OpMode
             //drive.setMotorPower(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, -gamepad1.right_stick_y, true);
             float mult = gamepad1.right_trigger;
             boolean fulldrive = !gamepad1.x;
-            mult = map(mult, 0,1,minspeed,maxspeed);
-            if(fulldrive){
-                //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
-                drive.setMotorPower(-(gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, (gamepad1.left_stick_y)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
-            }else{
-                drive.setMotorPower(-(gamepad1.right_stick_x)*mult, (gamepad1.right_stick_y)*mult, 0, 0, false);
-                robot.intakeArm.setPower(gamepad1.left_stick_y*0.1);
-            }
             boolean apressed = gamepad1.a;
+            boolean leftBump = gamepad1.left_bumper;
+            float intakeMult=1;
+            if(leftBump) intakeMult = 0.5f;
+            float rx = gamepad1.right_stick_x;
+            float ry = gamepad1.right_stick_y;
+            float lx = gamepad1.left_stick_x;
+            float ly = gamepad1.left_stick_y;
+            mult = map(mult, 0,1,minspeed,maxspeed);
+            //down is 860
+            //folded is 0
+            if(fulldrive){
+                robot.intakeArm.setPower(0);
+                //robot.intakeArm.setTargetPosition(intakeArmLastPos);
+                //robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                //robot.intakeArm.setPower(1);
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
+            }else{
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, 0, 0, false);
+                /*if(robot.intakeArm.getCurrentPosition()>=0 || robot.intakeArm.getCurrentPosition()<=860) {
+                    if(ly!=0) robot.intakeArm.setTargetPosition(robot.intakeArm.getCurrentPosition() + 25*(int)(ly/Math.abs(ly)));
+                    else robot.intakeArm.setTargetPosition(robot.intakeArm.getCurrentPosition());
+                    robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    robot.intakeArm.setPower(1);
+                }
+                intakeArmLastPos = robot.intakeArm.getCurrentPosition();*/
+                robot.intakeArm.setPower(ly);
+            }
+            telemetry.addData("IntakeArmPos",robot.intakeArm.getCurrentPosition());
+            telemetry.update();
             if(switching){
                 if(System.currentTimeMillis()-curtime > 500){//time before applying reverse voltage to switch direction
-                    robot.intakeMotorLeft.setPower(-1);//should be mleming out
-                    robot.intakeMotorRight.setPower(-1);
+                    robot.intakeMotorLeft.setPower(1*intakeMult);//should be mleming out
+                    robot.intakeMotorRight.setPower(1*intakeMult);
                     switching=false;
                 }
             }else {
-                if (apressed && !timerstart) {
+                if (apressed && !timerstart && !fromheld) {
                     timerstart = true;
                     curtime = System.currentTimeMillis();
-                } else if (timerstart) {
+                } else if (timerstart && !fromheld) {
                     if (apressed) {
-                        if (System.nanoTime() - curtime > 500) {//delay before holding A turns into spew mode
-                            robot.intakeMotorLeft.setPower(0);
-                            robot.intakeMotorRight.setPower(0);
-                            switching = true;
-                            curtime=System.currentTimeMillis();
+                        if (System.currentTimeMillis() - curtime > 300) {//delay before holding A turns into spew mode
+                            if(robot.intakeMotorLeft.getPower()<0){
+                                robot.intakeMotorLeft.setPower(0);
+                                robot.intakeMotorRight.setPower(0);
+                                switching = true;
+                                fromheld=true;
+                                curtime=System.currentTimeMillis();
+                            }else if(robot.intakeMotorLeft.getPower()==0){
+                                robot.intakeMotorLeft.setPower(1*intakeMult);
+                                robot.intakeMotorRight.setPower(1*intakeMult);
+                            }
                         }
                     } else {
-                        if (robot.intakeMotorLeft.getPower() == 1 && robot.intakeMotorLeft.getPower() == -1) {
+                        if (robot.intakeMotorLeft.getPower() !=0) {
                             robot.intakeMotorLeft.setPower(0);
                             robot.intakeMotorRight.setPower(0);
                         } else if (robot.intakeMotorLeft.getPower() == 0) {
-                            robot.intakeMotorLeft.setPower(1);//should be slurping in
-                            robot.intakeMotorRight.setPower(1);
+                            robot.intakeMotorLeft.setPower(-1*intakeMult);//should be slurping in
+                            robot.intakeMotorRight.setPower(-1*intakeMult);
                         }
                         timerstart = false;
                     }
+                }else if(!apressed){
+                    fromheld=false;
                 }
             }
         }

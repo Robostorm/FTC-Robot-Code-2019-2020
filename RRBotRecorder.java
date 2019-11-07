@@ -73,12 +73,13 @@ public class RRBotRecorder extends OpMode{
             float righty = gamepad1.right_stick_y;
             boolean a = gamepad1.a;
             float gas = gamepad1.right_trigger;
-            if(!startedRecording && (leftx != 0 || lefty != 0 || rightx!= 0 || righty !=0) || a==true || gas!=0){
+            boolean x = gamepad1.x;
+            if(!startedRecording && (leftx != 0 || lefty != 0 || rightx!= 0 || righty !=0) || a==true || gas!=0 || x==true){
                 telemetry.addData(">>","Started recording.");
                 telemetry.update();
                 startedRecording = true;
             }else if(startedRecording){
-                String message = leftx+","+lefty+","+rightx+","+righty+","+a+","+gas;
+                String message = leftx+","+lefty+","+rightx+","+righty+","+a+","+gas+","+x;
                 try{
                     writer.append(message+"\n");
                 }catch (IOException e) {e.printStackTrace();}

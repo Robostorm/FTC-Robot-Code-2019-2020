@@ -76,10 +76,20 @@ public class RRBotAutoReader extends LinearOpMode{
             while (opModeIsActive() && (curline = br.readLine()) !=null) {
                 String[] values = curline.split(",");
                 float mult = Float.parseFloat(values[5]);
-                mult = RRBotTeleop.map(mult, 0,1,RRBotTeleop.minspeed,RRBotTeleop.maxspeed);
-                drive.setMotorPower((Float.parseFloat(values[2]))*mult, (Float.parseFloat(values[3]))*mult, (Float.parseFloat(values[0]))*mult, (Float.parseFloat(values[0]))*mult, false);
-
+                boolean fulldrive = !Boolean.parseBoolean(values[6]);
                 boolean apressed = Boolean.parseBoolean(values[4]);
+                float lx = Integer.parseInt(values[0]);
+                float ly = Integer.parseInt(values[1]);
+                float rx = Integer.parseInt(values[2]);
+                float ry = Integer.parseInt(values[3]);
+                mult = RRBotTeleop.map(mult, 0,1,RRBotTeleop.minspeed,RRBotTeleop.maxspeed);
+                if(fulldrive){
+                    //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
+                    drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
+                }else{
+                    drive.setMotorPower(-(rx)*mult, (ry)*mult, 0, 0, false);
+                    robot.intakeArm.setPower(ly);
+                }
                 if(switching){
                     if(System.currentTimeMillis()-curtime > 500){//time before applying reverse voltage to switch direction
                         robot.intakeMotorLeft.setPower(-1);//should be mleming out
@@ -99,7 +109,7 @@ public class RRBotAutoReader extends LinearOpMode{
                                 curtime=System.currentTimeMillis();
                             }
                         } else {
-                            if (robot.intakeMotorLeft.getPower() == 1 && robot.intakeMotorLeft.getPower() == -1) {
+                            if (robot.intakeMotorLeft.getPower() == 1 || robot.intakeMotorLeft.getPower() == -1) {
                                 robot.intakeMotorLeft.setPower(0);
                                 robot.intakeMotorRight.setPower(0);
                             } else if (robot.intakeMotorLeft.getPower() == 0) {
