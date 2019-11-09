@@ -100,9 +100,9 @@ public class RRBotTeleop extends OpMode
                 //robot.intakeArm.setTargetPosition(intakeArmLastPos);
                 //robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 //robot.intakeArm.setPower(1);
-                drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, true);//if you change doFunction, make sure to also change it in RRBotAutoReader
             }else{
-                drive.setMotorPower(-(rx)*mult, (ry)*mult, 0, 0, false);
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, 0, 0, true);
                 /*if(robot.intakeArm.getCurrentPosition()>=0 || robot.intakeArm.getCurrentPosition()<=860) {
                     if(ly!=0) robot.intakeArm.setTargetPosition(robot.intakeArm.getCurrentPosition() + 25*(int)(ly/Math.abs(ly)));
                     else robot.intakeArm.setTargetPosition(robot.intakeArm.getCurrentPosition());

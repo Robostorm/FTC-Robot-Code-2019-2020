@@ -62,7 +62,7 @@ public class RRBotAuto2 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveSideways(1,36,10);
+            EncoderDriveSideways(1,-36,10);
         }
     }
 

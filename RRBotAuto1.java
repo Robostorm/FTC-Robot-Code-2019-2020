@@ -62,20 +62,20 @@ public class RRBotAuto1 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveTank(1,30,30,10); //run to foundation
+            EncoderDriveTank(1,-30,-30,10); //run to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(500);//Wait for servos
-            EncoderDriveTank(-1,33,33,10);//bring foundation back to wall
+            EncoderDriveTank(1,33,33,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(500);//Wait for servos
 
-            EncoderDriveSideways(1,20,10);//assuming positive distance is right? check with dave
+            EncoderDriveSideways(1,-20,10);//assuming positive distance is right? check with dave
 
-            EncoderDriveTank(1,20,20,10);//forward 20 inches
+            EncoderDriveTank(1,-20,20,10);//forward 20 inches
 
-            EncoderDriveSideways(1,40,10);//strafe 40 inches to the right, towards Audience
+            EncoderDriveSideways(1,-40,10);//strafe 40 inches to the right, towards Audience
         }
     }
 
