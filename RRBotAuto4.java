@@ -62,6 +62,7 @@ public class RRBotAuto4 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
+<<<<<<< HEAD
 <<<<<<< HEAD:OpModes/RRBotAuto4.java
             EncoderDriveSideways(RRBotAuto.autoSpeed,36,10);
             requestOpModeStop();
@@ -69,6 +70,9 @@ public class RRBotAuto4 extends LinearOpMode {
 =======
             EncoderDriveSideways(1,-36,10);
 >>>>>>> parent of b67c0b4... Added Auto Class:RRBotAuto4.java
+=======
+            EncoderDriveSideways(1,-36,10);
+>>>>>>> parent of b67c0b4... Added Auto Class
         }
     }
 

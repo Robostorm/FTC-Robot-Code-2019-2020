@@ -62,6 +62,7 @@ public class RRBotAuto1 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
+<<<<<<< HEAD
             EncoderDriveSideways(RRBotAuto.autoSpeed,8.5,10);//strafe 20 inches to the left
 
             EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //run to foundation
@@ -69,17 +70,32 @@ public class RRBotAuto1 extends LinearOpMode {
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
             EncoderDriveTank(RRBotAuto.autoSpeed,33,33,10);//bring foundation back to wall
+=======
+            EncoderDriveTank(1,30,30,10); //run to foundation
+            robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
+            robot.trayPullerRight.setPosition(1);//^^^
+            sleep(500);//Wait for servos
+            EncoderDriveTank(-1,33,33,10);//bring foundation back to wall
+>>>>>>> parent of b67c0b4... Added Auto Class
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
 
             EncoderDriveSideways(RRBotAuto.autoSpeed,-24,10);//strafe 20 inches to the left
 
+<<<<<<< HEAD
             EncoderDriveTank(RRBotAuto.autoSpeed,-20,-20,10);//forward 20 inches
 
             EncoderDriveSideways(RRBotAuto.autoSpeed,-16,10);//strafe 40 inches to the left, towards Audience
 
             requestOpModeStop();
+=======
+            EncoderDriveSideways(1,20,10);//assuming positive distance is right? check with dave
+
+            EncoderDriveTank(1,20,20,10);//forward 20 inches
+
+            EncoderDriveSideways(1,40,10);//strafe 40 inches to the right, towards Audience
+>>>>>>> parent of b67c0b4... Added Auto Class
         }
     }
 
