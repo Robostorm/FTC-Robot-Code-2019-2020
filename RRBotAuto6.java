@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.Misc.RRBotMecanumDrive;
 
 import java.util.Locale;
 
-@Autonomous(name="RRBotAutoParkCloseBlue")
+@Autonomous(name="RRBotAutoRepoParkCloseRed")
 
-public class RRBotAuto2 extends LinearOpMode {
+public class RRBotAuto6 extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -62,10 +62,34 @@ public class RRBotAuto2 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveSideways(RRBotAuto.autoSpeed,-36,10);
+<<<<<<< HEAD:OpModes/RRBotAuto6.java
+            EncoderDriveSideways(RRBotAuto.autoSpeed,-8.5,10);//strafe 20 inches to the left
 
+            EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //run to foundation
+=======
+            EncoderDriveTank(1,30,30,10); //run to foundation
+>>>>>>> parent of b67c0b4... Added Auto Class:RRBotAuto3.java
+            robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
+            robot.trayPullerRight.setPosition(1);//^^^
+            sleep(800);//Wait for servos
+            EncoderDriveTank(RRBotAuto.autoSpeed,33,32,10);//bring foundation back to wall
+            robot.trayPullerLeft.setPosition(1);//Release servos
+            robot.trayPullerRight.setPosition(0);//^^^
+<<<<<<< HEAD:OpModes/RRBotAuto6.java
+            sleep(800);//Wait for servos
+
+            EncoderDriveSideways(RRBotAuto.autoSpeed,40,10);//strafe 20 inches to the left
 
             requestOpModeStop();
+=======
+            sleep(500);//Wait for servos
+
+            EncoderDriveSideways(1,-20,10);//strafe 20 inches to the left
+
+            EncoderDriveTank(1,20,20,10);//forward 20 inches
+
+            EncoderDriveSideways(1,-40,10);//strafe 40 inches to the left, towards Audience
+>>>>>>> parent of b67c0b4... Added Auto Class:RRBotAuto3.java
         }
     }
 

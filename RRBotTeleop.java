@@ -138,12 +138,26 @@ public class RRBotTeleop extends OpMode
             }
             if(fulldrive && !midthrowback && !midthrowdown){
                 robot.intakeArm.setPower(0);
+<<<<<<< HEAD:OpModes/RRBotTeleop.java
                 if(lbump){
                     drive.setMotorPower(rx*mult, -ry*mult, 0, 0, true);
                     robot.liftMotor.setPower(ly*0.25);
                 }else {
                     robot.liftMotor.setPower(0);
                     drive.setMotorPower((rx)*mult, -(ry)*mult, (lx)*Math.abs(mult), -(ly)*mult, true);//if you change doFunction, make sure to also change it in RRBotAutoReader
+=======
+                //robot.intakeArm.setTargetPosition(intakeArmLastPos);
+                //robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                //robot.intakeArm.setPower(1);
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
+            }else{
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, 0, 0, false);
+                /*if(robot.intakeArm.getCurrentPosition()>=0 || robot.intakeArm.getCurrentPosition()<=860) {
+                    if(ly!=0) robot.intakeArm.setTargetPosition(robot.intakeArm.getCurrentPosition() + 25*(int)(ly/Math.abs(ly)));
+                    else robot.intakeArm.setTargetPosition(robot.intakeArm.getCurrentPosition());
+                    robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    robot.intakeArm.setPower(1);
+>>>>>>> parent of b67c0b4... Added Auto Class:RRBotTeleop.java
                 }
             }else {
                 drive.setMotorPower((rx)*mult, -(ry)*mult, 0, 0, true);
