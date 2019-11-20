@@ -1,16 +1,13 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.OpModes;
 
-import android.content.Context;
-
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.Misc.RRBotHardware;
+import org.firstinspires.ftc.teamcode.Misc.RRBotMecanumDrive;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 
 @TeleOp(name="RRBotRecorder")

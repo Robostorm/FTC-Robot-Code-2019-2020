@@ -1,22 +1,22 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.Misc.RRBotHardware;
+import org.firstinspires.ftc.teamcode.Misc.RRBotMecanumDrive;
+
 import java.util.Locale;
 
-@Autonomous(name="RRBotAutoRepoParkRed")
+@Autonomous(name="RRBotAutoRepoParkCloseBlue")
 
-public class RRBotAuto3 extends LinearOpMode {
+public class RRBotAuto5 extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -58,23 +58,24 @@ public class RRBotAuto3 extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveTank(1,-30,-30,10); //run to foundation
+            EncoderDriveSideways(RRBotAuto.autoSpeed,8.5,10);//strafe 20 inches to the left
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //run to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
-            sleep(500);//Wait for servos
-            EncoderDriveTank(-1,33,33,10);//bring foundation back to wall
+            sleep(800);//Wait for servos
+            EncoderDriveTank(RRBotAuto.autoSpeed,33,33,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
-            sleep(500);//Wait for servos
+            sleep(800);//Wait for servos
 
-            EncoderDriveSideways(1,20,10);//strafe 20 inches to the left
+            EncoderDriveSideways(RRBotAuto.autoSpeed,-40,10);//strafe 20 inches to the left
 
-            EncoderDriveTank(1,-20,20,10);//forward 20 inches
-
-            EncoderDriveSideways(1,40,10);//strafe 40 inches to the left, towards Audience
+            requestOpModeStop();
         }
     }
 

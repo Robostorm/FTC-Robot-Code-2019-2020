@@ -1,7 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Misc;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+
+import java.util.ArrayList;
+
+import static org.firstinspires.ftc.teamcode.Misc.MathFunctions.AngleWrap;
+import static org.firstinspires.ftc.teamcode.Misc.MathFunctions.lineCircleIntersection;
+import static org.firstinspires.ftc.teamcode.Misc.RRBotHardware.*;
 
 /**
  * Controls the robot's mecanum drive base
@@ -141,6 +146,84 @@ public class RRBotMecanumDrive
         else
         {
             return value;
+        }
+    }
+
+    public static void followCurve(ArrayList<CurvePoint> allPoints, double followAngle){
+        CurvePoint followMe = getFollowPointPath(allPoints,new Point(worldXPosition,worldYPosition),allPoints.get(0).followDistance);
+        goToPosition(followMe.x,followMe.y,followMe.moveSpeed,followAngle,followMe.turnSpeed);
+    }
+
+    public static CurvePoint getFollowPointPath(ArrayList<CurvePoint> pathPoints, Point robotLocation, double followRadius){
+        CurvePoint followMe = new CurvePoint(pathPoints.get(0));
+        for(int i=0;i<pathPoints.size()-1;i++){
+            CurvePoint startLine = pathPoints.get(i);
+            CurvePoint endLine = pathPoints.get(i+1);
+            ArrayList<Point> intersections = lineCircleIntersection(robotLocation, followRadius, startLine.toPoint(),endLine.toPoint());
+            double closestAngle = 1000000000;
+            for(Point thisIntersection : intersections){
+                double angle = Math.atan2(thisIntersection.y - worldYPosition, thisIntersection.x - worldXPosition);
+                double deltaAngle = Math.abs(MathFunctions.AngleWrap(angle - worldAngle_rad));
+
+                if(deltaAngle < closestAngle){
+                    closestAngle = deltaAngle;
+                    followMe.setPoint(thisIntersection);
+                }
+            }
+        }
+        return followMe;
+    }
+
+    public void ApplyMovement() {
+
+        double tl_power_raw = MovementVars.movement_y-MovementVars.movement_turn+MovementVars.movement_x*1.5;
+        double bl_power_raw = MovementVars.movement_y-MovementVars.movement_turn- MovementVars.movement_x*1.5;
+        double br_power_raw = -MovementVars.movement_y-MovementVars.movement_turn-MovementVars.movement_x*1.5;
+        double tr_power_raw = -MovementVars.movement_y-MovementVars.movement_turn+MovementVars.movement_x*1.5;
+
+        //find the maximum of the powers
+        double maxRawPower = Math.abs(tl_power_raw);
+        if(Math.abs(bl_power_raw) > maxRawPower){ maxRawPower = Math.abs(bl_power_raw);}
+        if(Math.abs(br_power_raw) > maxRawPower){ maxRawPower = Math.abs(br_power_raw);}
+        if(Math.abs(tr_power_raw) > maxRawPower){ maxRawPower = Math.abs(tr_power_raw);}
+
+        //if the maximum is greater than 1, scale all the powers down to preserve the shape
+        double scaleDownAmount = 1.0;
+        if(maxRawPower > 1.0){
+            //when max power is multiplied by this ratio, it will be 1.0, and others less
+            scaleDownAmount = 1.0/maxRawPower;
+        }
+        tl_power_raw *= scaleDownAmount;
+        bl_power_raw *= scaleDownAmount;
+        br_power_raw *= scaleDownAmount;
+        tr_power_raw *= scaleDownAmount;
+
+        //now we can set the powers ONLY IF THEY HAVE CHANGED TO AVOID SPAMMING USB COMMUNICATIONS
+        robot.frontLeftMotor.setPower(tl_power_raw);
+        robot.rearLeftMotor.setPower(bl_power_raw);
+        robot.rearRightMotor.setPower(br_power_raw);
+        robot.frontRightMotor.setPower(tr_power_raw);
+    }
+
+    public static void goToPosition(double x, double y, double movementSpeed, double preferredAngle, double turnSpeed){
+        double distanceToTarget = Math.hypot(x-worldXPosition, y-worldYPosition);
+        double absoluteAngleToTarget = Math.atan2(y-worldYPosition,x-worldXPosition);
+        double relativeAngleToPoint = AngleWrap(absoluteAngleToTarget - (worldAngle_rad - Math.toRadians(90)));
+
+        double relativeXToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
+        double relativeYToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
+
+        double movementXPower = relativeXToPoint / (Math.abs(relativeXToPoint) + Math.abs(relativeYToPoint));
+        double movementYPower = relativeYToPoint / (Math.abs(relativeXToPoint) + Math.abs(relativeYToPoint));
+
+        MovementVars.movement_x = movementXPower * movementSpeed;
+        MovementVars.movement_y = movementYPower * movementSpeed;
+
+        double relativeTurnAngle = relativeAngleToPoint - Math.toRadians(180) + preferredAngle;
+        MovementVars.movement_turn = Range.clip(relativeTurnAngle/Math.toRadians(30),-1,1) * turnSpeed;
+
+        if(distanceToTarget < 10){
+            MovementVars.movement_turn = 0;
         }
     }
 
