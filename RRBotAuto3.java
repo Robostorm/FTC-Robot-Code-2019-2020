@@ -62,9 +62,13 @@ public class RRBotAuto3 extends LinearOpMode {
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
 <<<<<<< HEAD
+<<<<<<< HEAD
             EncoderDriveSideways(RRBotAuto.autoSpeed,-8.5,10);//strafe 20 inches to the left
 
             EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //run to foundation
+=======
+            EncoderDriveTank(1,30,30,10); //run to foundation
+>>>>>>> parent of b67c0b4... Added Auto Class
 =======
             EncoderDriveTank(1,30,30,10); //run to foundation
 >>>>>>> parent of b67c0b4... Added Auto Class
@@ -83,13 +87,19 @@ public class RRBotAuto3 extends LinearOpMode {
 
             EncoderDriveSideways(RRBotAuto.autoSpeed,16,10);//strafe 40 inches to the left, towards Audience
 
+<<<<<<< HEAD
             requestOpModeStop();
 =======
+=======
+>>>>>>> parent of b67c0b4... Added Auto Class
             EncoderDriveSideways(1,-20,10);//strafe 20 inches to the left
 
             EncoderDriveTank(1,20,20,10);//forward 20 inches
 
             EncoderDriveSideways(1,-40,10);//strafe 40 inches to the left, towards Audience
+<<<<<<< HEAD
+>>>>>>> parent of b67c0b4... Added Auto Class
+=======
 >>>>>>> parent of b67c0b4... Added Auto Class
         }
     }
