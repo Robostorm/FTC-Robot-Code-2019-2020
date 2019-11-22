@@ -59,18 +59,18 @@ public class RRBotAuto6 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveSideways(1,-8.5,10);//strafe 20 inches to the left
+            EncoderDriveSideways(Constants.autoSpeed,-8.5,10);//strafe 20 inches to the left
 
-            EncoderDriveTank(1,-33,-33,10); //run to foundation
+            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //run to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(1,33,32,10);//bring foundation back to wall
+            EncoderDriveTank(Constants.autoSpeed,33,32,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
 
-            EncoderDriveSideways(1,40,10);//strafe 20 inches to the left
+            EncoderDriveSideways(Constants.autoSpeed,40,10);//strafe 20 inches to the left
 
             requestOpModeStop();
         }

@@ -14,11 +14,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.util.Locale;
 
-@Autonomous(name="RRBotAuto")
+@Autonomous(name="RRBotRepoPauseParkBlue")
 
-public class RRBotAuto extends LinearOpMode {
-
-    public static final double autoSpeed = 0.25;
+public class RRBotAuto7 extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -60,32 +58,24 @@ public class RRBotAuto extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            long start = System.currentTimeMillis();
+            EncoderDriveSideways(Constants.autoSpeed,8.5,10);//strafe 20 inches to the left
 
-            // Show the elapsed game time and wheel power.
-            //telemetry.addData("Status", "Run Time: " + runtime.toString());
-            //telemetry.update();
+            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //run to foundation
+            robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
+            robot.trayPullerRight.setPosition(1);//^^^
+            sleep(800);//Wait for servos
+            EncoderDriveTank(Constants.autoSpeed,33,33,10);//bring foundation back to wall
+            robot.trayPullerLeft.setPosition(1);//Release servos
+            robot.trayPullerRight.setPosition(0);//^^^
+            sleep(800);//Wait for servos
 
-            EncoderDriveTank(0.5,12,12,5);
-            sleep(1000);
-            EncoderDriveTank(0.5,-12,-12,5);
-            sleep(1000);
-            TurnByGyro("left",90,0.5);
-            sleep(1000);
-            TurnByGyro("right",90,0.5);
-            sleep(1000);
+            long delay = 25000 - (System.currentTimeMillis()-start);
+            sleep(delay);
+
+            EncoderDriveSideways(Constants.autoSpeed,-40,10);
+
             requestOpModeStop();
-
-            /*robot.trayPullerLeft.setPosition(0);
-            robot.trayPullerRight.setPosition(1);
-            sleep(1000);
-            robot.trayPullerLeft.setPosition(1);
-            robot.trayPullerRight.setPosition(0);
-            sleep(1000);*/
-
-
-
-            //telemetry.addData("Gyro Pos:", imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
-            //telemetry.update();
         }
     }
 
@@ -98,6 +88,74 @@ public class RRBotAuto extends LinearOpMode {
         parameters.loggingTag = "IMU";
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+    }
+
+    public void EncoderDriveSideways(double speed, double distance, double timeoutS)
+    {
+        //reset encoders
+        robot.rearLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rearRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        idle();
+
+        robot.rearLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.rearRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        int newRearLeftTarget;
+        int newRearRightTarget;
+        int newFrontLeftTarget;
+        int newFrontRightTarget;
+
+        //ensure that the opmode is still active
+        if(opModeIsActive())
+        {
+            //calculate target positions, negative for two motors so the robot strafes
+            newRearLeftTarget = robot.rearLeftMotor.getCurrentPosition() + (int) (-distance * Math.sqrt(2) * COUNTS_PER_INCH);
+            newRearRightTarget = robot.rearRightMotor.getCurrentPosition() + (int) (distance * Math.sqrt(2) * COUNTS_PER_INCH);
+            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int) (distance * Math.sqrt(2) * COUNTS_PER_INCH);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int) (-distance * Math.sqrt(2) * COUNTS_PER_INCH);
+            robot.rearLeftMotor.setTargetPosition(newRearLeftTarget);
+            robot.rearRightMotor.setTargetPosition(newRearRightTarget);
+            robot.frontLeftMotor.setTargetPosition(newFrontLeftTarget);
+            robot.frontRightMotor.setTargetPosition(newFrontRightTarget);
+
+            robot.rearLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rearRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            runtime.reset();
+
+            robot.rearLeftMotor.setPower(Math.abs(speed));
+            robot.rearRightMotor.setPower(Math.abs(speed));
+            robot.frontLeftMotor.setPower(Math.abs(speed));
+            robot.frontRightMotor.setPower(Math.abs(speed));
+
+            //keep looping until one of the motors finished its movement
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
+            {
+                //report current and target positions to driver station
+                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
+                telemetry.addData("Path2", "Running at %7d :%7d",
+                        robot.rearLeftMotor.getCurrentPosition(),
+                        robot.rearRightMotor.getCurrentPosition(),
+                        robot.frontLeftMotor.getCurrentPosition(),
+                        robot.frontRightMotor.getCurrentPosition());
+                telemetry.update();
+            }
+
+            TurnOffMotors();
+
+            robot.rearLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rearRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
     }
 
     public double[] calcVelocities(double leftX, double leftY)

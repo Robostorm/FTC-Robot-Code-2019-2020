@@ -62,36 +62,36 @@ public class RRBotAuto1 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveSideways(RRBotAuto.autoSpeed,8.5,10);//move to the right out of the triangle
+            EncoderDriveSideways(Constants.autoSpeed,8.5,10);//move to the right out of the triangle
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //back up to foundation
+            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //back up to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(RRBotAuto.autoSpeed,33,33,10);//bring foundation up against wall
+            EncoderDriveTank(Constants.autoSpeed,33,33,10);//bring foundation up against wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
 
-            EncoderDriveSideways(RRBotAuto.autoSpeed,-24,10);//strafe out from behind foundation
+            EncoderDriveSideways(Constants.autoSpeed,-24,10);//strafe out from behind foundation
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-20,-20,10);//back up to line up with bridge
+            EncoderDriveTank(Constants.autoSpeed,-20,-20,10);//back up to line up with bridge
 
-            TurnByGyro("right",90,RRBotAuto.autoSpeed);//turn so that grabber arm is on correct side for block grabbing
+            TurnByGyro("right",90,Constants.autoSpeed);//turn so that grabber arm is on correct side for block grabbing
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-52,-52,10);//back up thru bridge over to blocks
+            EncoderDriveTank(Constants.autoSpeed,-52,-52,10);//back up thru bridge over to blocks
             pickUpBlock();
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,72,72,10);//move thru blue bridge with block
+            EncoderDriveTank(Constants.autoSpeed,72,72,10);//move thru blue bridge with block
             putDownBlock();
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-78,-78,10);//move back to line of blocks
+            EncoderDriveTank(Constants.autoSpeed,-78,-78,10);//move back to line of blocks
             pickUpBlock();
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,72,72,10);//bring block forward
+            EncoderDriveTank(Constants.autoSpeed,72,72,10);//bring block forward
             putDownBlock();
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-48,-48,10);//park under bridge
+            EncoderDriveTank(Constants.autoSpeed,-48,-48,10);//park under bridge
 
             requestOpModeStop();
         }

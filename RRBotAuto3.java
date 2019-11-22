@@ -61,22 +61,22 @@ public class RRBotAuto3 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveSideways(RRBotAuto.autoSpeed,-8.5,10);//strafe 20 inches to the left
+            EncoderDriveSideways(Constants.autoSpeed,-8.5,10);//strafe 20 inches to the left
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //run to foundation
+            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //run to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(RRBotAuto.autoSpeed,32,32,10);//bring foundation back to wall
+            EncoderDriveTank(Constants.autoSpeed,32,32,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
 
-            EncoderDriveSideways(RRBotAuto.autoSpeed,24,10);//strafe 20 inches to the left
+            EncoderDriveSideways(Constants.autoSpeed,24,10);//strafe 20 inches to the left
 
-            EncoderDriveTank(RRBotAuto.autoSpeed,-20,-20,10);//forward 20 inches
+            EncoderDriveTank(Constants.autoSpeed,-20,-20,10);//forward 20 inches
 
-            EncoderDriveSideways(RRBotAuto.autoSpeed,16,10);//strafe 40 inches to the left, towards Audience
+            EncoderDriveSideways(Constants.autoSpeed,16,10);//strafe 40 inches to the left, towards Audience
 
             requestOpModeStop();
         }
