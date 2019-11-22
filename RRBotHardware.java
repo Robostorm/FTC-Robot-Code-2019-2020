@@ -16,7 +16,7 @@ public class RRBotHardware
     public Servo trayPullerLeft = null;
     public Servo trayPullerRight = null;
     public Servo blockGrabber = null;
-    //public Servo pinPuller = null;
+    public Servo grabberArm = null;
 
     public DcMotor intakeMotorLeft = null;
     public DcMotor intakeMotorRight = null;
@@ -47,7 +47,7 @@ public class RRBotHardware
         trayPullerLeft = hwMap.servo.get("tray_puller_left");
         trayPullerRight = hwMap.servo.get("tray_puller_right");
         blockGrabber = hwMap.servo.get("block_grabber");
-        //pinPuller = hwMap.servo.get("pin_puller");
+        grabberArm = hwMap.servo.get("grabber_arm");
 
         intakeMotorLeft = hwMap.dcMotor.get("intake1");
         intakeMotorRight = hwMap.dcMotor.get("intake2");
@@ -55,9 +55,10 @@ public class RRBotHardware
         liftMotor = hwMap.dcMotor.get("liftMotor");
 
         // Set Position of Servos
-        trayPullerLeft.setPosition(1);
-        trayPullerRight.setPosition(0);
-        blockGrabber.setPosition(1);
+        trayPullerLeft.setPosition(1);//up
+        trayPullerRight.setPosition(0);//up
+        blockGrabber.setPosition(0);
+        grabberArm.setPosition(0);
 
         //set motors to drive forwards
         rearRightMotor.setDirection(DcMotor.Direction.REVERSE);

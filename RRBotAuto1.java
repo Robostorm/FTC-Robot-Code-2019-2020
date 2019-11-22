@@ -62,21 +62,54 @@ public class RRBotAuto1 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveTank(1,-30,-30,10); //run to foundation
+            EncoderDriveSideways(RRBotAuto.autoSpeed,8.5,10);//move to the right out of the triangle
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,-33,-33,10); //back up to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
-            sleep(500);//Wait for servos
-            EncoderDriveTank(1,33,33,10);//bring foundation back to wall
+            sleep(800);//Wait for servos
+            EncoderDriveTank(RRBotAuto.autoSpeed,33,33,10);//bring foundation up against wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
-            sleep(500);//Wait for servos
+            sleep(800);//Wait for servos
 
-            EncoderDriveSideways(1,-20,10);//assuming positive distance is right? check with dave
+            EncoderDriveSideways(RRBotAuto.autoSpeed,-24,10);//strafe out from behind foundation
 
-            EncoderDriveTank(1,-20,20,10);//forward 20 inches
+            EncoderDriveTank(RRBotAuto.autoSpeed,-20,-20,10);//back up to line up with bridge
 
-            EncoderDriveSideways(1,-40,10);//strafe 40 inches to the right, towards Audience
+            TurnByGyro("right",90,RRBotAuto.autoSpeed);//turn so that grabber arm is on correct side for block grabbing
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,-52,-52,10);//back up thru bridge over to blocks
+            pickUpBlock();
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,72,72,10);//move thru blue bridge with block
+            putDownBlock();
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,-78,-78,10);//move back to line of blocks
+            pickUpBlock();
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,72,72,10);//bring block forward
+            putDownBlock();
+
+            EncoderDriveTank(RRBotAuto.autoSpeed,-48,-48,10);//park under bridge
+
+            requestOpModeStop();
         }
+    }
+
+    public void pickUpBlock(){
+        robot.grabberArm.setPosition(0);//put arm down over block
+        sleep(500);
+        robot.blockGrabber.setPosition(0);//close grabber onto block
+        sleep(500);
+        robot.grabberArm.setPosition(1);//bring arm back up
+    }
+
+    public void putDownBlock(){
+        robot.grabberArm.setPosition(0);//put arm down
+        sleep(500);
+        robot.blockGrabber.setPosition(1);//release block
+        sleep(500);
     }
 
     public void initGyro()

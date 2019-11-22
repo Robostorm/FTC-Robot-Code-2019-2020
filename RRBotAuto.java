@@ -18,6 +18,8 @@ import java.util.Locale;
 
 public class RRBotAuto extends LinearOpMode {
 
+    public static final double autoSpeed = 0.25;
+
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     RRBotHardware robot = new RRBotHardware();
