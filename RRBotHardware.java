@@ -70,6 +70,8 @@ public class RRBotHardware
         rearLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         frontLeftMotor.setPower(0);
+        intakeMotorLeft.setPower(0);
+        intakeMotorRight.setPower(0);
         liftMotor.setPower(0);
 
         // Set drive motors to run using encoders
