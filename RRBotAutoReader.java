@@ -83,13 +83,7 @@ public class RRBotAutoReader extends LinearOpMode{
                 float rx = Integer.parseInt(values[2]);
                 float ry = Integer.parseInt(values[3]);
                 mult = RRBotTeleop.map(mult, 0,1,RRBotTeleop.minspeed,RRBotTeleop.maxspeed);
-                if(fulldrive){
-                    //drive.setMotorPower((gamepad1.right_stick_x)*mult, -(gamepad1.right_stick_y)*mult, (gamepad1.left_stick_x)*mult, -(gamepad1.left_stick_y)*mult, true);
-                    drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
-                }else{
-                    drive.setMotorPower(-(rx)*mult, (ry)*mult, 0, 0, false);
-                    robot.intakeArm.setPower(ly);
-                }
+                drive.setMotorPower(-(rx)*mult, (ry)*mult, (lx)*mult, (ly)*mult, false);//if you change doFunction, make sure to also change it in RRBotAutoReader
                 if(switching){
                     if(System.currentTimeMillis()-curtime > 500){//time before applying reverse voltage to switch direction
                         robot.intakeMotorLeft.setPower(-1);//should be mleming out

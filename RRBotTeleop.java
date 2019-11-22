@@ -5,9 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.RRBotHardware;
-import org.firstinspires.ftc.teamcode.RRBotMecanumDrive;
-
 /**
  * TeleOp class, contains separate functions that run the robot during driver operated period of the game
  * @author John Brereton
