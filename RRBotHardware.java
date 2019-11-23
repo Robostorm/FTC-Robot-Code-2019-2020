@@ -54,7 +54,7 @@ public class RRBotHardware
         grabberArm = hwMap.servo.get("grabber_arm");
 
         // Define and Initialize Others
-        liftStartSwitch = hwMap.digitalChannel.get("leftBottomSwitch");
+        liftStartSwitch = hwMap.digitalChannel.get("leftStartSwitch");
 
         // Set Position of Servos
         trayPullerLeft.setPosition(1);//up

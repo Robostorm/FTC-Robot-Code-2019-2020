@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.util.Locale;
 
-@Autonomous(name="RepoPausePark", group="Red")
+@Autonomous(name="RedRepoPausePark", group="Red")
 
 public class RRBotAuto8 extends LinearOpMode {
 
