@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 @Autonomous(name="RRBotAutoReader")
+@Disabled
 
 public class RRBotAutoReader extends LinearOpMode{
 

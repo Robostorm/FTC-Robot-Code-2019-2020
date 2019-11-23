@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 @TeleOp(name="RRBotRecorder")
+@Disabled
 public class RRBotRecorder extends OpMode{
     // Declare OpMode members.
     public static final String RECORD_FILE = "teleop_rec.txt";
