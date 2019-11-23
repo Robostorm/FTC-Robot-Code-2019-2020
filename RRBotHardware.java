@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -12,16 +13,16 @@ public class RRBotHardware
     public DcMotor rearLeftMotor = null;
     public DcMotor frontRightMotor = null;
     public DcMotor frontLeftMotor = null;
+    public DcMotor intakeMotorLeft = null;
+    public DcMotor intakeMotorRight = null;
+    public DcMotor liftMotor = null;
 
     public Servo trayPullerLeft = null;
     public Servo trayPullerRight = null;
     public Servo blockGrabber = null;
     public Servo grabberArm = null;
 
-    public DcMotor intakeMotorLeft = null;
-    public DcMotor intakeMotorRight = null;
-
-    public DcMotor liftMotor = null;
+    public DigitalChannel liftStartSwitch = null;
 
     /* local OpMode members. */
     HardwareMap hwMap = null;
@@ -42,6 +43,9 @@ public class RRBotHardware
         rearLeftMotor = hwMap.dcMotor.get("rear_left");
         frontRightMotor = hwMap.dcMotor.get("front_right");
         frontLeftMotor = hwMap.dcMotor.get("front_left");
+        intakeMotorLeft = hwMap.dcMotor.get("intake1");
+        intakeMotorRight = hwMap.dcMotor.get("intake2");
+        liftMotor = hwMap.dcMotor.get("liftMotor");
 
         // Define and Initialize Servos
         trayPullerLeft = hwMap.servo.get("tray_puller_left");
@@ -49,10 +53,8 @@ public class RRBotHardware
         blockGrabber = hwMap.servo.get("block_grabber");
         grabberArm = hwMap.servo.get("grabber_arm");
 
-        intakeMotorLeft = hwMap.dcMotor.get("intake1");
-        intakeMotorRight = hwMap.dcMotor.get("intake2");
-
-        liftMotor = hwMap.dcMotor.get("liftMotor");
+        // Define and Initialize Others
+        liftStartSwitch = hwMap.digitalChannel.get("leftBottomSwitch");
 
         // Set Position of Servos
         trayPullerLeft.setPosition(1);//up
@@ -74,6 +76,9 @@ public class RRBotHardware
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
         liftMotor.setPower(0);
+
+        // Set all Digital Channels to Input
+        liftStartSwitch.setMode(DigitalChannel.Mode.INPUT);
 
         // Set drive motors to run using encoders
         rearRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

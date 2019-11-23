@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * TeleOp class, contains separate functions that run the robot during driver operated period of the game
- * @author John Brereton
+ * @author John Brereton, Aidan Ferry
  * @since 9/8/2019
  */
 
@@ -55,6 +55,7 @@ public class RRBotTeleop extends OpMode
     @Override
     public void loop() {
         DriveUpdate();
+        placerUpdate();
     }
 
     /*
@@ -69,8 +70,7 @@ public class RRBotTeleop extends OpMode
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    public void DriveUpdate()
-    {
+    public void DriveUpdate() {
         //if the robot is not driving automatically, set motor power to the manual drive algorithm based on gamepad inputs
         if(!drive.getIsAutoMove())
         {
@@ -79,7 +79,6 @@ public class RRBotTeleop extends OpMode
             boolean fulldrive = !gamepad1.x;
             boolean apressed = gamepad1.a;
             //boolean leftBump = gamepad1.left_bumper;
-            boolean ypressed = gamepad1.y;
             boolean bpressed = gamepad1.b;
             boolean lbump = gamepad1.left_bumper;
             float rx = gamepad1.right_stick_x;
@@ -100,16 +99,16 @@ public class RRBotTeleop extends OpMode
                 btimeout = System.currentTimeMillis();
 
             }
-            if(ypressed && System.currentTimeMillis()-ytimeout > 250){
-                robot.trayPullerLeft.setPosition(1-robot.trayPullerLeft.getPosition());
-                robot.trayPullerRight.setPosition(1-robot.trayPullerRight.getPosition());
-                ytimeout = System.currentTimeMillis();
-            }
             if(fulldrive){
                 if(lbump){
                     drive.setMotorPower(rx*mult, -ry*mult, 0, 0, true);
-                    robot.liftMotor.setPower(ly*0.25);
+                    if(robot.liftStartSwitch.getState()==false || (robot.liftStartSwitch.getState()==true && ly>0)){
+                        robot.liftMotor.setPower(ly*0.25);
+                    }else if(robot.liftStartSwitch.getState()==true && ly<0){
+                        robot.liftMotor.setPower(0);
+                    }
                 }else {
+
                     robot.liftMotor.setPower(0);
                     drive.setMotorPower((rx)*mult, -(ry)*mult, (lx)*Math.abs(mult), -(ly)*mult, true);//if you change doFunction, make sure to also change it in RRBotAutoReader
                 }
@@ -160,6 +159,19 @@ public class RRBotTeleop extends OpMode
         else
         {
             drive.AutoMoveEndCheck();
+        }
+    }
+    public void placerUpdate() {
+
+    }
+    public void pullerUpdate() {
+        boolean ypressed = gamepad1.y;
+
+
+        if(ypressed && System.currentTimeMillis()-ytimeout > 250){
+            robot.trayPullerLeft.setPosition(1-robot.trayPullerLeft.getPosition());
+            robot.trayPullerRight.setPosition(1-robot.trayPullerRight.getPosition());
+            ytimeout = System.currentTimeMillis();
         }
     }
 }
