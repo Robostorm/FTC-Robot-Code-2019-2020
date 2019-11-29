@@ -65,7 +65,7 @@ public class RRBotAuto7 extends LinearOpMode {
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(Constants.autoSpeed,33,33,10);//bring foundation back to wall
+            EncoderDriveTank(Constants.autoSpeed,32,32,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
@@ -73,7 +73,7 @@ public class RRBotAuto7 extends LinearOpMode {
             long delay = 25000 - (System.currentTimeMillis()-start);
             sleep(delay);
 
-            EncoderDriveSideways(Constants.autoSpeed,-40,10);
+            EncoderDriveSideways(Constants.autoSpeed*2,-40,10);
 
             requestOpModeStop();
         }
@@ -157,59 +157,8 @@ public class RRBotAuto7 extends LinearOpMode {
             robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }
-
-    public double[] calcVelocities(double leftX, double leftY)
-    {
-        double moveY1 = leftY;
-        double turn = leftX;
-
-        //remap input values using a function
-        /*if(doFunction)
-        {
-            moveX = inputFunction(moveX);
-            moveY1 = inputFunction(moveY1);
-            turn = inputFunction(turn);
-            moveY2 = inputFunction(moveY2);
-        }*/
-
-        double v1 = moveY1 + turn;
-        double v2 = moveY1 - turn;
-        double v3 = moveY1 - turn;
-        double v4 = moveY1 + turn;
-
-        double max = Math.abs(v1);
-        if(Math.abs(v2) > max)
-            max = Math.abs(v2);
-        if(Math.abs(v3) > max)
-            max = Math.abs(v3);
-        if(Math.abs(v4) > max)
-            max = Math.abs(v4);
-        if(max > 1)
-        {
-            v1 /= max;
-            v2 /= max;
-            v3 /= max;
-            v4 /= max;
-        }
-
-        double[] velocities = {v1, v2, v3, v4};
-        return velocities;
-    }
-
-    public void setMotorPower(double x, double y)
-    {
-        //calculate the velocities
-        double[] velocities = calcVelocities(x, y);
-
-        //set the motor power
-        robot.frontLeftMotor.setPower(velocities[0]);
-        robot.frontRightMotor.setPower(velocities[1]);
-        robot.rearLeftMotor.setPower(velocities[2]);
-        robot.rearRightMotor.setPower(velocities[3]);
-    }
-
     //make another version of the method where you give it inches sideways and inches forward and it goes in a straight line there
-    public void DriveDirection(double speed, double angle, double inches, double timeoutS){ //0 Degrees is strafing directly to the right
+    public void DriveDirection(double speed, double angle, double timeoutS){ //0 Degrees is strafing directly to the right
         robot.rearLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rearRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -221,38 +170,13 @@ public class RRBotAuto7 extends LinearOpMode {
         robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //sin(x−(1/4)π) - front right & back left (power, -1 to 1 where negative is back and positive is forward)
-        //sin(x+(1/4)π) - front left & back right
-        //double inchesfwd = inches*Math.sin(angle);
-
-        //int rearLeftTarget = robot.rearLeftMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-        //int rearRightTarget = robot.rearRightMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-        //int frontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-        //int frontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int) (inchesfwd * COUNTS_PER_INCH);
-
         double jx = Math.cos(angle);
         double jy = Math.sin(angle);
 
         if (opModeIsActive())
         {
-            /*rearLeftTarget *= Math.abs(rearLeftPower);
-            rearRightTarget *= Math.abs(rearRightPower);
-            frontLeftTarget *= Math.abs(frontLeftPower);
-            frontRightTarget *= Math.abs(frontRightPower);*/
-
-            // reset the timeout time and start motion.
-
-            // Turn On RUN_TO_POSITION
-            /*robot.rearLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.rearRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);*/
-
             runtime.reset();
-            //public void setMotorPower(double x, double y)
-            setMotorPower(jx*speed,jy*speed);
-
-            // keep looping while we are still active, and there is time left, and both motors are running.
+            drive.setMotorPower(jx*speed,jy*speed,0,0,true);
             while(opModeIsActive() &&
                     (runtime.seconds() < timeoutS))
             {

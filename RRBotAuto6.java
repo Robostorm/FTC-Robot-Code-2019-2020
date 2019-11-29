@@ -65,7 +65,7 @@ public class RRBotAuto6 extends LinearOpMode {
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(Constants.autoSpeed,33,32,10);//bring foundation back to wall
+            EncoderDriveTank(Constants.autoSpeed,32,32,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos

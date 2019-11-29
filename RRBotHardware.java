@@ -15,14 +15,16 @@ public class RRBotHardware
     public DcMotor frontLeftMotor = null;
     public DcMotor intakeMotorLeft = null;
     public DcMotor intakeMotorRight = null;
+    public DcMotor intakeArm = null;
     public DcMotor liftMotor = null;
 
     public Servo trayPullerLeft = null;
     public Servo trayPullerRight = null;
     public Servo blockGrabber = null;
     public Servo grabberArm = null;
+    public Servo endCapArm = null;
 
-    public DigitalChannel liftStartSwitch = null;
+    //public DigitalChannel liftStartSwitch = null;
 
     /* local OpMode members. */
     HardwareMap hwMap = null;
@@ -45,6 +47,7 @@ public class RRBotHardware
         frontLeftMotor = hwMap.dcMotor.get("front_left");
         intakeMotorLeft = hwMap.dcMotor.get("intake1");
         intakeMotorRight = hwMap.dcMotor.get("intake2");
+        intakeArm = hwMap.dcMotor.get("intakeArm");
         liftMotor = hwMap.dcMotor.get("liftMotor");
 
         // Define and Initialize Servos
@@ -52,15 +55,17 @@ public class RRBotHardware
         trayPullerRight = hwMap.servo.get("tray_puller_right");
         blockGrabber = hwMap.servo.get("block_grabber");
         grabberArm = hwMap.servo.get("grabber_arm");
+        endCapArm = hwMap.servo.get("endcap_arm");
 
         // Define and Initialize Others
-        liftStartSwitch = hwMap.digitalChannel.get("leftStartSwitch");
+        //liftStartSwitch = hwMap.digitalChannel.get("leftStartSwitch");
 
         // Set Position of Servos
         trayPullerLeft.setPosition(1);//up
         trayPullerRight.setPosition(0);//up
-        blockGrabber.setPosition(0);
         grabberArm.setPosition(0);
+        blockGrabber.setPosition(1);
+        endCapArm.setPosition(0);
 
         //set motors to drive forwards
         rearRightMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -75,10 +80,11 @@ public class RRBotHardware
         frontLeftMotor.setPower(0);
         intakeMotorLeft.setPower(0);
         intakeMotorRight.setPower(0);
+        intakeArm.setPower(0);
         liftMotor.setPower(0);
 
         // Set all Digital Channels to Input
-        liftStartSwitch.setMode(DigitalChannel.Mode.INPUT);
+        //liftStartSwitch.setMode(DigitalChannel.Mode.INPUT);
 
         // Set drive motors to run using encoders
         rearRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -87,7 +93,8 @@ public class RRBotHardware
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intakeMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeArm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Sets motors to brake mode
         rearRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -96,6 +103,7 @@ public class RRBotHardware
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intakeArm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }

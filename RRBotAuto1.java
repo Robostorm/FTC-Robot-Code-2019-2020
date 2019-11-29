@@ -1,20 +1,21 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.Constants;
+import org.firstinspires.ftc.teamcode.RRBotHardware;
+import org.firstinspires.ftc.teamcode.RRBotMecanumDrive;
+
 import java.util.Locale;
 
-@Autonomous(name="BlueRepoPark", group="Blue")
+@Autonomous(name="BlueRepoPark")
 
 public class RRBotAuto1 extends LinearOpMode {
 
@@ -62,54 +63,25 @@ public class RRBotAuto1 extends LinearOpMode {
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
-            EncoderDriveSideways(Constants.autoSpeed,8.5,10);//move to the right out of the triangle
+            EncoderDriveSideways(Constants.autoSpeed,8.5,10);//strafe 20 inches to the left
 
-            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //back up to foundation
+            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //run to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(Constants.autoSpeed,33,33,10);//bring foundation up against wall
+            EncoderDriveTank(Constants.autoSpeed,32,32,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
 
-            EncoderDriveSideways(Constants.autoSpeed,-24,10);//strafe out from behind foundation
+            EncoderDriveSideways(Constants.autoSpeed,-24,10);//strafe 20 inches to the left
 
-            EncoderDriveTank(Constants.autoSpeed,-20,-20,10);//back up to line up with bridge
+            EncoderDriveTank(Constants.autoSpeed,-20,-20,10);//forward 20 inches
 
-            TurnByGyro("right",90,Constants.autoSpeed);//turn so that grabber arm is on correct side for block grabbing
-
-            EncoderDriveTank(Constants.autoSpeed,-52,-52,10);//back up thru bridge over to blocks
-            pickUpBlock();
-
-            EncoderDriveTank(Constants.autoSpeed,72,72,10);//move thru blue bridge with block
-            putDownBlock();
-
-            EncoderDriveTank(Constants.autoSpeed,-78,-78,10);//move back to line of blocks
-            pickUpBlock();
-
-            EncoderDriveTank(Constants.autoSpeed,72,72,10);//bring block forward
-            putDownBlock();
-
-            EncoderDriveTank(Constants.autoSpeed,-48,-48,10);//park under bridge
+            EncoderDriveSideways(Constants.autoSpeed,-16,10);//strafe 40 inches to the left, towards Audience
 
             requestOpModeStop();
         }
-    }
-
-    public void pickUpBlock(){
-        robot.grabberArm.setPosition(0);//put arm down over block
-        sleep(500);
-        robot.blockGrabber.setPosition(0);//close grabber onto block
-        sleep(500);
-        robot.grabberArm.setPosition(1);//bring arm back up
-    }
-
-    public void putDownBlock(){
-        robot.grabberArm.setPosition(0);//put arm down
-        sleep(500);
-        robot.blockGrabber.setPosition(1);//release block
-        sleep(500);
     }
 
     public void initGyro()

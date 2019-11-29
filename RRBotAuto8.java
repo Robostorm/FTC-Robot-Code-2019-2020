@@ -65,7 +65,7 @@ public class RRBotAuto8 extends LinearOpMode {
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
             sleep(800);//Wait for servos
-            EncoderDriveTank(Constants.autoSpeed,33,33,10);//bring foundation back to wall
+            EncoderDriveTank(Constants.autoSpeed,32,32,10);//bring foundation back to wall
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
             sleep(800);//Wait for servos
@@ -73,7 +73,7 @@ public class RRBotAuto8 extends LinearOpMode {
             long delay = 25000 - (System.currentTimeMillis()-start);
             sleep(delay);
 
-            EncoderDriveSideways(Constants.autoSpeed,40,10);
+            EncoderDriveSideways(Constants.autoSpeed*2,40,10);
 
             requestOpModeStop();
         }
