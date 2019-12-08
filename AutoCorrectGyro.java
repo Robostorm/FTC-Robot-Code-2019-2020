@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Locale;
 
-@Autonomous(name="CircleAuto")
+@Autonomous(name="AutoCorrectGyro")
 
 public class AutoCorrectGyro extends LinearOpMode {
 
@@ -21,6 +21,11 @@ public class AutoCorrectGyro extends LinearOpMode {
     RRBotHardware robot = new RRBotHardware();
 
     private static double orientation = 0; //Orientation of 0 means that the front of the robot is facing the midline of the field (throught the neutral bridge)
+    private static double correctnessThreshold=0.2;
+    private static double maxTime = 5000; //Milliseconds allotted for angle autocorrect
+    private static float maxTurnPower = 1f;
+
+    private static long startMS;
 
     //gyro variables
     private BNO055IMU imu;
@@ -58,9 +63,24 @@ public class AutoCorrectGyro extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
+        startMS = System.currentTimeMillis();
         while (opModeIsActive()) {
-
-
+            setAngle(90);
+            telemetry.addData("Angle: ",imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
+            telemetry.update();
+            sleep(1000);
+            setAngle(180);
+            telemetry.addData("Angle: ",imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
+            telemetry.update();
+            sleep(1000);
+            setAngle(-90);
+            telemetry.addData("Angle: ",imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
+            telemetry.update();
+            sleep(1000);
+            setAngle(0);
+            telemetry.addData("Angle: ",imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
+            telemetry.update();
+            sleep(1000);
         }
     }
 
@@ -69,23 +89,50 @@ public class AutoCorrectGyro extends LinearOpMode {
     }
 
     public void AutoCorrect(){
-        int correctnessThreshold=1;//Tolerance in degrees between actual and desired orientation
+        double prevPowerRR = robot.rearRightMotor.getPower();
+        double prevPowerRL = robot.rearLeftMotor.getPower();
+        double prevPowerFR = robot.frontRightMotor.getPower();
+        double prevPowerFL = robot.frontLeftMotor.getPower();
         int dirTurn = 1;
+        double traveled=0;
+        double leftmost=0;
+        double rightmost=0;
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         float startHeading = angles.firstAngle;
-        //Figure out how the angles work and determine how to figure out which direction is quickest to turn to autocorrect
-        while(Math.abs(startHeading-orientation)>correctnessThreshold){
-            double turnPower = map((float)Math.abs(startHeading-orientation), 0,180,0,1);//WHAT SHOULD INPUT RANGE BE? DEPENDS ON HOW THE ANGLES WORK
-            robot.rearRightMotor.setPower(turnPower*dirTurn);
-            robot.rearLeftMotor.setPower(-turnPower*dirTurn);
-            robot.frontRightMotor.setPower(turnPower*dirTurn);
-            robot.frontLeftMotor.setPower(-turnPower*dirTurn);
+        long doneTime = 0;
+        boolean timerStart=false;
+        long startTime = System.currentTimeMillis();
+        while((!timerStart || Math.abs(startHeading-orientation)>correctnessThreshold || System.currentTimeMillis()-doneTime<100) && System.currentTimeMillis()-startTime < maxTime && System.currentTimeMillis()-startMS<29500){
+            if(Math.abs(startHeading-orientation)<=correctnessThreshold && !timerStart){
+                doneTime=System.currentTimeMillis();
+                timerStart=true;
+            }else if(Math.abs(startHeading-orientation)>correctnessThreshold){
+                doneTime=0;
+                timerStart=false;
+            }
+
             startHeading = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+            if(startHeading>orientation && startHeading-orientation<180) dirTurn=-1;
+            else if(startHeading<orientation && orientation-startHeading>180) dirTurn=-1;
+            else dirTurn=1;
+            leftmost = startHeading>orientation ? startHeading : orientation;
+            rightmost = startHeading+orientation-leftmost;
+            if(leftmost<0 != rightmost<0){
+                traveled = leftmost+Math.abs(rightmost)<90 ? leftmost+Math.abs(rightmost) : (180-leftmost)+180-Math.abs(rightmost);
+            }else{
+                traveled = leftmost>0 ? leftmost-rightmost : Math.abs(rightmost-leftmost);
+            }
+            double turnPower = map((float)traveled, 0,30,maxTurnPower/10,maxTurnPower);
+            if(turnPower>maxTurnPower) turnPower=maxTurnPower;
+            robot.rearRightMotor.setPower(prevPowerRR+(turnPower*dirTurn));
+            robot.rearLeftMotor.setPower(prevPowerRL+(-turnPower*dirTurn));
+            robot.frontRightMotor.setPower(prevPowerFR+(turnPower*dirTurn));
+            robot.frontLeftMotor.setPower(prevPowerFL+(-turnPower*dirTurn));
         }
-        robot.rearRightMotor.setPower(0);
-        robot.rearLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-        robot.frontLeftMotor.setPower(0);
+        robot.rearRightMotor.setPower(prevPowerRR);
+        robot.rearLeftMotor.setPower(prevPowerRL);
+        robot.frontRightMotor.setPower(prevPowerFR);
+        robot.frontLeftMotor.setPower(prevPowerFL);
     }
 
     public void DriveDirection(double speed, double angle, double timeoutS){ //0 Degrees is strafing directly to the right
@@ -109,7 +156,9 @@ public class AutoCorrectGyro extends LinearOpMode {
             drive.setMotorPower(jx*speed,jy*speed,0,0,true);
             while(opModeIsActive() &&
                     (runtime.seconds() < timeoutS))
-            {}
+            {
+                AutoCorrect();
+            }
 
             TurnOffMotors();
 
@@ -190,6 +239,16 @@ public class AutoCorrectGyro extends LinearOpMode {
             robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+    }
+
+    public void setAngle(double orientation){
+        this.orientation = orientation;
+        AutoCorrect();
+    }
+    public void turnAngle(String direction, double angle){
+        if(direction=="left") this.orientation += angle;
+        else if(direction=="right") this.orientation -= angle;
+        AutoCorrect();
     }
 
     public void TurnByGyro(String direction, int angle, double speed)
