@@ -6,19 +6,34 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
-@Autonomous(name="AutoCorrectGyro")
+@Autonomous(name="FullAutoBlue")
 
-public class AutoCorrectGyro extends LinearOpMode {
+public class FullAutoBlue extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     RRBotHardware robot = new RRBotHardware();
+
+    private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
+    private static final String LABEL_FIRST_ELEMENT = "Stone";
+    private static final String LABEL_SECOND_ELEMENT = "Skystone";
+    private static final String VUFORIA_KEY = "AVVIoiT/////AAABmX81rTPW60hcgKTP12YL9sFIHAXL7WyR1JI578v+YFJG/JSwjny6iEWiHEZ+twbt7HQ61pyg3A4/CCjpG1/u6VC6N2uK5bnWgFzeIHRESoUVX0pbphXVmkJ8NQmi9ZdKeNKV2ZgnM++ZT3cwvksRhXaA5LfVH0oB3XGNhrOzteP66UquAJUaNRKnMRjH4VjBiw9EWD1YGImGzeFPpA0p2xTKXQZAfLalNGnDRXM+3BlUfJsFbaSR+Uu/C3MIb8PMyA6h1nQGxMaIZLnl/Py2LPFgo5prafgdcD+9tV/BqE9F89AJC5LvHwOSKTfvsF9qe0fsZHFjg/+h10hZdeF8b1bQBhVO2OZf/T/e94I85MOh";
+    private VuforiaLocalizer vuforia;
+    private TFObjectDetector tfod;
 
     private static double orientation = 0; //Orientation of 0 means that the front of the robot is facing the midline of the field (throught the neutral bridge)
     private static double correctnessThreshold=0.2;
@@ -51,6 +66,7 @@ public class AutoCorrectGyro extends LinearOpMode {
         robot.init(hardwareMap);
         orientation = 0; //Starting Orientation
         initGyro();
+        initVuforia();
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
@@ -60,14 +76,139 @@ public class AutoCorrectGyro extends LinearOpMode {
                 robot.frontLeftMotor.getCurrentPosition());
         telemetry.update();
 
+        if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+            initTfod();
+        } else {
+            telemetry.addData("Sorry!", "This device is not compatible with TFOD");
+        }
+        if (tfod != null) {
+            tfod.activate();
+        }
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         startMS = System.currentTimeMillis();
+        HashMap<Integer,Float> test = new HashMap<Integer,Float>();
         while (opModeIsActive()) {
+            if (tfod != null) {
+                // getUpdatedRecognitions() will return null if no new information is available since
+                // the last time that call was made.
+                int in=6;
+                while(in<=24){
+                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
+                    if(updatedRecognitions!=null && updatedRecognitions.size()>0 && updatedRecognitions.get(0).getLabel().equals("Stone")){
+                        //telemetry.addData("Height",updatedRecognitions.get(0).getHeight()/updatedRecognitions.get(0).getImageHeight());
+                        test.put(in,(float)(updatedRecognitions.get(0).getHeight()/updatedRecognitions.get(0).getImageHeight()));
+                        EncoderDriveTank(0.25,1,1,5);
+                        in++;
+                    }
+                }
+                for(int i=6;i<=24;i++){
+                    telemetry.addData(""+i,test.get(i));
+                }
+                telemetry.update();
+                //test this and print out all values, put into desmos to find formula
+                //use this formula to find inches away based on height ratio
+                //you can just plug in height ratio into formula to find inches
+
+            }else{
+                telemetry.addData(">>","TFOD is null");
+                telemetry.update();
+            }
+            telemetry.update();
+            /*EncoderDriveSideways(Constants.autoSpeed,8.5,10);//strafe 20 inches to the left
+
+            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //run to foundation
+            robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
+            robot.trayPullerRight.setPosition(1);//^^^
+            sleep(800);//Wait for servos
+            EncoderDriveTank(Constants.autoSpeed,16,16,10);//bring foundation back to wall
+            turnAngle("left",90);
+            robot.trayPullerLeft.setPosition(1);//Release servos
+            robot.trayPullerRight.setPosition(0);//^^^
+            sleep(800);//Wait for servos
+            //Back up into corner for consistency
+            EncoderDriveTank(Constants.autoSpeed,-5,-5,5);
+            EncoderDriveSideways(Constants.autoSpeed,5,5);
+
+            EncoderDriveSideways(Constants.autoSpeed,-24,5);
+
+            EncoderDriveTank(Constants.autoSpeed,60,60,10);//forward 20 inches
+
+            turnAngle("right",90);
+
+            centerOnSkystone();
+
+            requestOpModeStop();*/
+        }
+    }
+
+    public Recognition findLeftmost(List<Recognition> recogs){
+        Recognition leftmost = recogs.get(0);
+        float leftmostpx=recogs.get(0).getImageWidth();
+        for(Recognition recog : recogs){
+            if(recog.getLabel().equals("Stone") || recog.getLabel().equals("Skystone")){
+                if(recog.getLeft()<leftmostpx) {
+                    leftmostpx = recog.getLeft();
+                    leftmost = recog;
+                }
+            }
+        }
+        return leftmost;
+    }
+    public Recognition findSkystone(List<Recognition> recogs){
+        for(Recognition recog : recogs){
+            if(recog.getLabel().equals("Skystone")) return recog;
+        }
+        return null;
+    }
+
+    public void centerOnSkystone(){
+        if (tfod != null) {
+            // getUpdatedRecognitions() will return null if no new information is available since
+            // the last time that call was made.
+            while(true){
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                if (updatedRecognitions != null && updatedRecognitions.size()>0) {
+                    //telemetry.addData("# Object Detected", updatedRecognitions.size());
+                    Recognition leftmost = findLeftmost(updatedRecognitions);
+                    if(leftmost.getLabel().equals("Skystone")){
+                        Recognition skystone = leftmost;
+                        float ppi = skystone.getWidth()/8f;
+                        float desiredSideSpace = (skystone.getImageWidth()-skystone.getWidth())/2;
+                        float inches=0;
+                        if(skystone.getLeft() > (skystone.getImageWidth()-skystone.getRight())){//left space more than right space
+                            inches = (skystone.getLeft()-desiredSideSpace)*ppi;//drive left
+                        }else{
+                            inches = -(skystone.getImageWidth()-skystone.getRight()-desiredSideSpace)*ppi;//drive right
+                        }
+                        if (Math.abs(inches) > 0.25) EncoderDriveSideways(0.25, inches, 5);
+                        else {
+                            EncoderDriveSideways(0.25,14,5);
+                            EncoderDriveTank(0.5,-10,-10,5);
+                            EncoderDriveTank(0.5,10,10,5);
+                            EncoderDriveSideways(0.25,-14,5);
+                            break;
+                        }
+                        //adjust in line
+                        //turn right
+                        //back up
+                        //strafe in
+                        //throw down intake
+                        //turn on intake
+                        //drive forward
+                    }else{
+                        EncoderDriveSideways(0.5,8,5);
+                    }
+                }
+            }
+        }else{
+            telemetry.addData(">>","TFOD is null");
+            telemetry.update();
         }
     }
 
@@ -361,6 +502,28 @@ public class AutoCorrectGyro extends LinearOpMode {
     String formatDegrees(double degrees)
     {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minimumConfidence = 0.8;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
     public void TurnOffMotors()
     {
