@@ -126,14 +126,6 @@ public class RRBotAuto4 extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
-                //report current and target positions to driver station
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
             }
 
             TurnOffMotors();
@@ -196,14 +188,6 @@ public class RRBotAuto4 extends LinearOpMode {
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
 
-                // Display it for the driver.
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
             }
 
             TurnOffMotors();

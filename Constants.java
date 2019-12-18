@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
 public class Constants {
-    public static final double autoSpeed = 0.25;
+    public static final double autoSpeed = 0.3;
 }

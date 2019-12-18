@@ -67,7 +67,7 @@ public class AutoCorrectGyro extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         startMS = System.currentTimeMillis();
         while (opModeIsActive()) {
-
+            DriveDirection(0.5,90,5);
         }
     }
 
@@ -215,15 +215,7 @@ public class AutoCorrectGyro extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
-
-                // Display it for the driver.
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
+                AutoCorrect();
             }
 
             TurnOffMotors();

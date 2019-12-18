@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * TeleOp class, contains separate functions that run the robot during driver operated period of the game
- * @author John Brereton, Aidan Ferry
+ * @author Aidan Ferry
  * @since 9/8/2019
  */
 
@@ -18,6 +18,8 @@ public class RRBotTeleop extends OpMode
 {
     public static float minspeed = 0.5f; // with gas pedal not pressed
     public static float maxspeed = 1.5f; // with gas pedal at full
+
+    public static final int liftClearanceHeight = 1300;
 
     private static boolean timerstart=false;
     private static long ytimeout = 0;
@@ -28,12 +30,20 @@ public class RRBotTeleop extends OpMode
     private static boolean inverted=false;
     private static long rbumptimer=0;
     private static long lbumptimer=0;
+    private static long dpaddowntimer = 0;
     private static long dpaduptimer = 0;
+    private static boolean dpadleftstart=false;
+    private static boolean dpadrightstart=false;
+    private static long dpadlefthold =0;
+    private static long dpadrighthold = 0;
+    private static long intakeArmMoving=0;
     private static long grabTimer = 0;
     private static boolean switching=false;
     private static boolean fromheld=false;
     private static boolean grabbing=false;
-    private static int intakeArmLastPos;
+
+    private static int[] intakeArmPositions = {0,1500,1950};
+    private static int intakeArmPos=0;
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -50,7 +60,8 @@ public class RRBotTeleop extends OpMode
         telemetry.addData("Status", "Initializing");
 
         robot.init(hardwareMap);
-        robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.intakeArm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -63,6 +74,7 @@ public class RRBotTeleop extends OpMode
     public void loop() {
         Gamepad1Update();
         Gamepad2Update();
+        if(System.currentTimeMillis()-intakeArmMoving < 500) robot.intakeArm.setPower(0.5);
     }
 
     /*
@@ -106,27 +118,60 @@ public class RRBotTeleop extends OpMode
         boolean ypressed = gamepad2.y;
         boolean apressed = gamepad2.a;
         boolean lbump = gamepad2.left_bumper;
-        float ry = -gamepad2.right_stick_y;
         float ly = gamepad2.left_stick_y;
         boolean bpressed = gamepad2.b;
         boolean dpadup = gamepad2.dpad_up;
+        boolean dpaddown = gamepad2.dpad_down;
+        boolean dpadleft = gamepad2.dpad_left;
+        boolean dpadright = gamepad2.dpad_right;
         if(gamepad2.left_trigger>0.5 && System.currentTimeMillis()-grabTimer > 500){
-            grabbing=!grabbing;
+            robot.blockGrabber.setPosition(1-robot.blockGrabber.getPosition());
             grabTimer = System.currentTimeMillis();
         }
 
         liftMotorUpdate();
 
-        robot.intakeArm.setPower(ry*0.15);
-
-        robot.blockGrabber.setPosition(grabbing ? 1 : 0);
-
-        if(dpadup && System.currentTimeMillis() - dpaduptimer > 500){
-            robot.endCapArm.setPosition(1-robot.endCapArm.getPosition());
+        if(dpadup && System.currentTimeMillis()-dpaduptimer > 500){
+            if(intakeArmPos!=2) intakeArmPos++;
+            robot.intakeArm.setTargetPosition(intakeArmPositions[intakeArmPos]);
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             dpaduptimer = System.currentTimeMillis();
+            intakeArmMoving = System.currentTimeMillis();
+        }
+        if(dpaddown && System.currentTimeMillis()-dpaddowntimer > 500){
+            if(intakeArmPos!=0) intakeArmPos--;
+            robot.intakeArm.setTargetPosition(intakeArmPositions[intakeArmPos]);
+            robot.intakeArm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            dpaddowntimer = System.currentTimeMillis();
+            intakeArmMoving = System.currentTimeMillis();
         }
 
-        if(lbump && System.currentTimeMillis()-lbumptimer > 500 && robot.liftMotor.getCurrentPosition()<-500){
+        if(dpadleft){
+            if(!dpadleftstart) {
+                dpadlefthold=System.currentTimeMillis();
+                dpadleftstart=true;
+            }
+            if(dpadleftstart && System.currentTimeMillis()-dpadlefthold>250){
+                robot.endCapArm.setPosition(1-robot.endCapArm.getPosition());
+                dpadleftstart=false;
+            }
+        }else{
+            dpadleftstart=false;
+        }
+        if(dpadright){
+            if(!dpadrightstart){
+                dpadrighthold = System.currentTimeMillis();
+                dpadrightstart=true;
+            }
+            if(dpadrightstart && System.currentTimeMillis()-dpadrighthold>250){
+                flipLift();
+                dpadrightstart=false;
+            }
+        }else{
+            dpadrightstart=false;
+        }
+
+        if(lbump && System.currentTimeMillis()-lbumptimer > 500 && robot.liftMotor.getCurrentPosition()>liftClearanceHeight){
             robot.grabberArm.setPosition(1-robot.grabberArm.getPosition());
             lbumptimer = System.currentTimeMillis();
         }
@@ -180,14 +225,32 @@ public class RRBotTeleop extends OpMode
             }
         }
     }
+    public void flipLift(){
+        robot.liftMotor.setTargetPosition(liftClearanceHeight);
+        robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.liftMotor.setPower(0.75);
+        long timer=System.currentTimeMillis();
+        while(System.currentTimeMillis()-timer<1000) {}
+        robot.liftMotor.setPower(0);
+        robot.grabberArm.setPosition(1-robot.grabberArm.getPosition());
+        timer=System.currentTimeMillis();
+        while(System.currentTimeMillis()-timer<750){}
+        robot.liftMotor.setTargetPosition(0);
+        robot.liftMotor.setPower(0.75);
+        timer=System.currentTimeMillis();
+        while(System.currentTimeMillis()-timer<1250) {}
+        robot.liftMotor.setPower(0);
+    }
     public void liftMotorUpdate(){
         float ly = gamepad2.left_stick_y;
         if(ly<0){
-            robot.liftMotor.setTargetPosition(-1350);
+            robot.liftMotor.setTargetPosition(2350);
         }else{
-            robot.liftMotor.setTargetPosition(-10);
+            robot.liftMotor.setTargetPosition(10);
         }
         robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.liftMotor.setPower(ly*0.25);
+        robot.liftMotor.setPower(ly*0.3);
+        telemetry.addData(">>",robot.liftMotor.getCurrentPosition());
+        telemetry.update();
     }
 }

@@ -55,7 +55,7 @@ public class RRBotHardware
         trayPullerRight = hwMap.servo.get("tray_puller_right");
         blockGrabber = hwMap.servo.get("block_grabber");
         grabberArm = hwMap.servo.get("grabber_arm");
-        endCapArm = hwMap.servo.get("endcap_arm");
+        endCapArm = hwMap.servo.get("end_cap_arm");
 
         // Define and Initialize Others
         //liftStartSwitch = hwMap.digitalChannel.get("leftStartSwitch");
@@ -64,7 +64,7 @@ public class RRBotHardware
         trayPullerLeft.setPosition(1);//up
         trayPullerRight.setPosition(0);//up
         grabberArm.setPosition(0);
-        blockGrabber.setPosition(1);
+        blockGrabber.setPosition(0);
         endCapArm.setPosition(0);
 
         //set motors to drive forwards

@@ -9,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.RRBotHardware;
 import org.firstinspires.ftc.teamcode.RRBotMecanumDrive;
 
@@ -33,6 +32,12 @@ public class RRBotAuto1 extends LinearOpMode {
     private final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
     private final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
 
+    private static double orientation = 0; //Orientation of 0 means that the front of the robot is facing the midline of the field (throught the neutral bridge)
+    private static double correctnessThreshold=1;
+    private static double maxTime = 4000; //Milliseconds allotted for angle autocorrect
+    private static float maxTurnPower = 1f;
+
+    private static long startMS;
 
     //construct drive class
     RRBotMecanumDrive drive = new RRBotMecanumDrive(robot);
@@ -58,8 +63,8 @@ public class RRBotAuto1 extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
+        startMS = System.currentTimeMillis();
         while (opModeIsActive()) {
-
             // Show the elapsed game time and wheel power.
             /*telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.update();*/
@@ -82,6 +87,57 @@ public class RRBotAuto1 extends LinearOpMode {
 
             requestOpModeStop();
         }
+    }
+
+    public static float map(float x, float in_min, float in_max, float out_min, float out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
+    public void AutoCorrect(){
+        double prevPowerRR = robot.rearRightMotor.getPower();
+        double prevPowerRL = robot.rearLeftMotor.getPower();
+        double prevPowerFR = robot.frontRightMotor.getPower();
+        double prevPowerFL = robot.frontLeftMotor.getPower();
+        int dirTurn = 1;
+        double traveled=0;
+        double leftmost=0;
+        double rightmost=0;
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        float startHeading = angles.firstAngle;
+        long doneTime = 0;
+        boolean timerStart=false;
+        long startTime = System.currentTimeMillis();
+        while((!timerStart || Math.abs(startHeading-orientation)>correctnessThreshold || System.currentTimeMillis()-doneTime<100) && System.currentTimeMillis()-startTime < maxTime && System.currentTimeMillis()-startMS<29500){
+            if(Math.abs(startHeading-orientation)<=correctnessThreshold && !timerStart){
+                doneTime=System.currentTimeMillis();
+                timerStart=true;
+            }else if(Math.abs(startHeading-orientation)>correctnessThreshold){
+                doneTime=0;
+                timerStart=false;
+            }
+
+            startHeading = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+            if(startHeading>orientation && startHeading-orientation<180) dirTurn=-1;
+            else if(startHeading<orientation && orientation-startHeading>180) dirTurn=-1;
+            else dirTurn=1;
+            leftmost = startHeading>orientation ? startHeading : orientation;
+            rightmost = startHeading+orientation-leftmost;
+            if(leftmost<0 != rightmost<0){
+                traveled = leftmost+Math.abs(rightmost)<90 ? leftmost+Math.abs(rightmost) : (180-leftmost)+180-Math.abs(rightmost);
+            }else{
+                traveled = leftmost>0 ? leftmost-rightmost : Math.abs(rightmost-leftmost);
+            }
+            double turnPower = map((float)traveled, 0,30,maxTurnPower/10,maxTurnPower);
+            if(turnPower>maxTurnPower) turnPower=maxTurnPower;
+            robot.rearRightMotor.setPower(prevPowerRR+(turnPower*dirTurn));
+            robot.rearLeftMotor.setPower(prevPowerRL+(-turnPower*dirTurn));
+            robot.frontRightMotor.setPower(prevPowerFR+(turnPower*dirTurn));
+            robot.frontLeftMotor.setPower(prevPowerFL+(-turnPower*dirTurn));
+        }
+        robot.rearRightMotor.setPower(prevPowerRR);
+        robot.rearLeftMotor.setPower(prevPowerRL);
+        robot.frontRightMotor.setPower(prevPowerFR);
+        robot.frontLeftMotor.setPower(prevPowerFL);
     }
 
     public void initGyro()
@@ -144,14 +200,7 @@ public class RRBotAuto1 extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
-                //report current and target positions to driver station
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
+                //AutoCorrect();
             }
 
             TurnOffMotors();
@@ -213,15 +262,7 @@ public class RRBotAuto1 extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
-
-                // Display it for the driver.
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
+                //AutoCorrect();
             }
 
             TurnOffMotors();

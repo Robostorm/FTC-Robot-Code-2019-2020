@@ -36,8 +36,8 @@ public class FullAutoBlue extends LinearOpMode {
     private TFObjectDetector tfod;
 
     private static double orientation = 0; //Orientation of 0 means that the front of the robot is facing the midline of the field (throught the neutral bridge)
-    private static double correctnessThreshold=0.2;
-    private static double maxTime = 5000; //Milliseconds allotted for angle autocorrect
+    private static double correctnessThreshold=1;
+    private static double maxTime = 4000; //Milliseconds allotted for angle autocorrect
     private static float maxTurnPower = 1f;
 
     private static float xPosition;
@@ -68,6 +68,8 @@ public class FullAutoBlue extends LinearOpMode {
         initGyro();
         initVuforia();
 
+        robot.liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
                 robot.rearRightMotor.getCurrentPosition(),
@@ -91,59 +93,36 @@ public class FullAutoBlue extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         startMS = System.currentTimeMillis();
-        HashMap<Integer,Float> test = new HashMap<Integer,Float>();
         while (opModeIsActive()) {
-            if (tfod != null) {
-                // getUpdatedRecognitions() will return null if no new information is available since
-                // the last time that call was made.
-                int in=6;
-                while(in<=24){
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
-                    if(updatedRecognitions!=null && updatedRecognitions.size()>0 && updatedRecognitions.get(0).getLabel().equals("Stone")){
-                        //telemetry.addData("Height",updatedRecognitions.get(0).getHeight()/updatedRecognitions.get(0).getImageHeight());
-                        test.put(in,(float)(updatedRecognitions.get(0).getHeight()/updatedRecognitions.get(0).getImageHeight()));
-                        EncoderDriveTank(0.25,1,1,5);
-                        in++;
-                    }
-                }
-                for(int i=6;i<=24;i++){
-                    telemetry.addData(""+i,test.get(i));
-                }
-                telemetry.update();
-                //test this and print out all values, put into desmos to find formula
-                //use this formula to find inches away based on height ratio
-                //you can just plug in height ratio into formula to find inches
+            EncoderDriveSideways(0.75,8.5,10);//strafe 20 inches to the left
 
-            }else{
-                telemetry.addData(">>","TFOD is null");
-                telemetry.update();
-            }
-            telemetry.update();
-            /*EncoderDriveSideways(Constants.autoSpeed,8.5,10);//strafe 20 inches to the left
+            EncoderDriveTank(1,-24,-24,10); //run to foundation
+            EncoderDriveTank(Constants.autoSpeed,-10,-10,10); //run to foundation
 
-            EncoderDriveTank(Constants.autoSpeed,-33,-33,10); //run to foundation
             robot.trayPullerLeft.setPosition(0);//Grasp foundation with servos
             robot.trayPullerRight.setPosition(1);//^^^
-            sleep(800);//Wait for servos
-            EncoderDriveTank(Constants.autoSpeed,16,16,10);//bring foundation back to wall
-            turnAngle("left",90);
+            sleep(400);//Wait for servos
+            EncoderDriveTank(1,24,24,10);//bring foundation back to wall
+            turnAngle("left",90,0.75);
             robot.trayPullerLeft.setPosition(1);//Release servos
             robot.trayPullerRight.setPosition(0);//^^^
-            sleep(800);//Wait for servos
+            sleep(400);//Wait for servos
+
             //Back up into corner for consistency
-            EncoderDriveTank(Constants.autoSpeed,-5,-5,5);
-            EncoderDriveSideways(Constants.autoSpeed,5,5);
+            EncoderDriveTank(1,-10,-10,5);
 
-            EncoderDriveSideways(Constants.autoSpeed,-24,5);
+            EncoderDriveSideways(0.5,-4,5);
 
-            EncoderDriveTank(Constants.autoSpeed,60,60,10);//forward 20 inches
+            EncoderDriveTank(1,65,65,10);//forward 20 inches
+
+            EncoderDriveSideways(0.75,12,5);
 
             turnAngle("right",90);
 
             centerOnSkystone();
 
-            requestOpModeStop();*/
+            requestOpModeStop();
         }
     }
 
@@ -161,51 +140,64 @@ public class FullAutoBlue extends LinearOpMode {
         return leftmost;
     }
     public Recognition findSkystone(List<Recognition> recogs){
+        float leftmostpx=1000f;
+        Recognition leftmostskystone=null;
         for(Recognition recog : recogs){
-            if(recog.getLabel().equals("Skystone")) return recog;
+            if(recog.getLabel().equals("Skystone")) {
+                if(recog.getLeft()<leftmostpx){
+                    leftmostpx = recog.getLeft();
+                    leftmostskystone = recog;
+                }
+            }
         }
-        return null;
+        if(leftmostskystone!=null) return leftmostskystone;
+        else return null;
     }
 
     public void centerOnSkystone(){
         if (tfod != null) {
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
-            while(true){
+            int timeschecked=0;
+            while(System.currentTimeMillis()-startMS < 29500){
                 List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
                 if (updatedRecognitions != null && updatedRecognitions.size()>0) {
                     //telemetry.addData("# Object Detected", updatedRecognitions.size());
                     Recognition leftmost = findLeftmost(updatedRecognitions);
+                    float pixels=1000000;
                     if(leftmost.getLabel().equals("Skystone")){
-                        Recognition skystone = leftmost;
-                        float ppi = skystone.getWidth()/8f;
-                        float desiredSideSpace = (skystone.getImageWidth()-skystone.getWidth())/2;
-                        float inches=0;
-                        if(skystone.getLeft() > (skystone.getImageWidth()-skystone.getRight())){//left space more than right space
-                            inches = (skystone.getLeft()-desiredSideSpace)*ppi;//drive left
-                        }else{
-                            inches = -(skystone.getImageWidth()-skystone.getRight()-desiredSideSpace)*ppi;//drive right
+                        while(Math.abs(pixels)>200f){
+                            List<Recognition> recogs = tfod.getUpdatedRecognitions();
+                            if(recogs != null && recogs.size()>0 && findSkystone(recogs)!=null){
+                                Recognition skystone = findSkystone(recogs);
+                                pixels = (skystone.getImageWidth()-skystone.getRight()) - (skystone.getLeft());//positive means must go right (bot must go left)
+                                EncoderDriveSideways(1,2*(pixels>0 ? 1 : -1),5);
+                            }
                         }
-                        if (Math.abs(inches) > 0.25) EncoderDriveSideways(0.25, inches, 5);
-                        else {
-                            EncoderDriveSideways(0.25,14,5);
-                            EncoderDriveTank(0.5,-10,-10,5);
-                            EncoderDriveTank(0.5,10,10,5);
-                            EncoderDriveSideways(0.25,-14,5);
-                            break;
-                        }
-                        //adjust in line
-                        //turn right
-                        //back up
-                        //strafe in
-                        //throw down intake
-                        //turn on intake
-                        //drive forward
-                    }else{
-                        EncoderDriveSideways(0.5,8,5);
-                    }
+                        break;
+                    }else if(timeschecked>=3){
+                        EncoderDriveSideways(0.5,-4,5);
+                        timeschecked=0;
+                    }else timeschecked++;
                 }
             }
+            AutoCorrect();
+            EncoderDriveSideways(1,-14,5);
+            EncoderDriveTank(1,-32,-32,5);
+            EncoderDriveTank(1,8,8,5);
+            EncoderDriveSideways(1,-6,5);
+            turnAngle("left",90);
+            flipOutLift();
+            EncoderDriveSideways(0.5,-5,5);
+            EncoderDriveTank(0.5,-5,-5,5);
+            EncoderDriveSideways(0.5,5,5);
+            robot.blockGrabber.setPosition(1);
+            sleep(250);
+            EncoderDriveSideways(0.5,16,5);
+            EncoderDriveTank(1,-50,-50,5);
+            robot.blockGrabber.setPosition(0);
+            EncoderDriveTank(1,25,25,5);
+
         }else{
             telemetry.addData(">>","TFOD is null");
             telemetry.update();
@@ -216,12 +208,68 @@ public class FullAutoBlue extends LinearOpMode {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    public void updatePosition(){
-
+    public void flipOutLift(){
+        robot.liftMotor.setTargetPosition(RRBotTeleop.liftClearanceHeight);
+        robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.liftMotor.setPower(0.75);
+        long timer=System.currentTimeMillis();
+        while(System.currentTimeMillis()-timer<1000) {}
+        robot.liftMotor.setPower(0);
+        robot.grabberArm.setPosition(1-robot.grabberArm.getPosition());
+        timer=System.currentTimeMillis();
+        while(System.currentTimeMillis()-timer<750){}
+        robot.liftMotor.setTargetPosition(0);
+        robot.liftMotor.setPower(0.75);
+        timer=System.currentTimeMillis();
+        while(System.currentTimeMillis()-timer<1250) {}
+        robot.liftMotor.setPower(0);
     }
 
-    public void goToPosition(){
+    public void AutoCorrect(double power){
+        double prevPowerRR = robot.rearRightMotor.getPower();
+        double prevPowerRL = robot.rearLeftMotor.getPower();
+        double prevPowerFR = robot.frontRightMotor.getPower();
+        double prevPowerFL = robot.frontLeftMotor.getPower();
+        int dirTurn = 1;
+        double traveled=0;
+        double leftmost=0;
+        double rightmost=0;
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        float startHeading = angles.firstAngle;
+        long doneTime = 0;
+        boolean timerStart=false;
+        long startTime = System.currentTimeMillis();
+        while((!timerStart || Math.abs(startHeading-orientation)>correctnessThreshold || System.currentTimeMillis()-doneTime<100) && System.currentTimeMillis()-startTime < maxTime && System.currentTimeMillis()-startMS<29500){
+            if(Math.abs(startHeading-orientation)<=correctnessThreshold && !timerStart){
+                doneTime=System.currentTimeMillis();
+                timerStart=true;
+            }else if(Math.abs(startHeading-orientation)>correctnessThreshold){
+                doneTime=0;
+                timerStart=false;
+            }
 
+            startHeading = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+            if(startHeading>orientation && startHeading-orientation<180) dirTurn=-1;
+            else if(startHeading<orientation && orientation-startHeading>180) dirTurn=-1;
+            else dirTurn=1;
+            leftmost = startHeading>orientation ? startHeading : orientation;
+            rightmost = startHeading+orientation-leftmost;
+            if(leftmost<0 != rightmost<0){
+                traveled = leftmost+Math.abs(rightmost)<90 ? leftmost+Math.abs(rightmost) : (180-leftmost)+180-Math.abs(rightmost);
+            }else{
+                traveled = leftmost>0 ? leftmost-rightmost : Math.abs(rightmost-leftmost);
+            }
+            double turnPower = map((float)traveled, 0,30,maxTurnPower/10,maxTurnPower);
+            if(turnPower>maxTurnPower) turnPower=maxTurnPower;
+            robot.rearRightMotor.setPower(prevPowerRR+(turnPower*dirTurn*power));
+            robot.rearLeftMotor.setPower(prevPowerRL+(-turnPower*dirTurn*power));
+            robot.frontRightMotor.setPower(prevPowerFR+(turnPower*dirTurn*power));
+            robot.frontLeftMotor.setPower(prevPowerFL+(-turnPower*dirTurn*power));
+        }
+        robot.rearRightMotor.setPower(prevPowerRR);
+        robot.rearLeftMotor.setPower(prevPowerRL);
+        robot.frontRightMotor.setPower(prevPowerFR);
+        robot.frontLeftMotor.setPower(prevPowerFL);
     }
 
     public void AutoCorrect(){
@@ -356,15 +404,7 @@ public class FullAutoBlue extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
-
-                // Display it for the driver.
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
+                AutoCorrect();
             }
 
             TurnOffMotors();
@@ -385,7 +425,12 @@ public class FullAutoBlue extends LinearOpMode {
         if(direction=="left") this.orientation += angle;
         else if(direction=="right") this.orientation -= angle;
         AutoCorrect();
+    }public void turnAngle(String direction, double angle, double power){
+        if(direction=="left") this.orientation += angle;
+        else if(direction=="right") this.orientation -= angle;
+        AutoCorrect(power);
     }
+
 
     public void TurnByGyro(String direction, int angle, double speed)
     {
@@ -476,14 +521,7 @@ public class FullAutoBlue extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (robot.rearLeftMotor.isBusy() && robot.rearRightMotor.isBusy() && robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()))
             {
-                //report current and target positions to driver station
-                telemetry.addData("Path1", "Running to %7d :%7d", newRearLeftTarget, newRearRightTarget, newFrontLeftTarget, newFrontRightTarget);
-                telemetry.addData("Path2", "Running at %7d :%7d",
-                        robot.rearLeftMotor.getCurrentPosition(),
-                        robot.rearRightMotor.getCurrentPosition(),
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition());
-                telemetry.update();
+                AutoCorrect();
             }
 
             TurnOffMotors();
